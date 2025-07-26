@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Room Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        .seat-animation {
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .highlight-step {
+            background-color: rgba(99, 102, 241, 0.1);
+            border-left: 3px solid #6366f1;
+            transform: scale(1.02);
+        }
+        .log-entry {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tooltip {
+            position: relative;
+        }
+        .tooltip-text {
+            visibility: hidden;
+            width: 120px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        #roomContainer {
+            scrollbar-width: thin;
+            scrollbar-color: #c7d2fe #f0f0f0;
+        }
+        #roomContainer::-webkit-scrollbar {
+            height: 8px;
+        }
+        #roomContainer::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border-radius: 10px;
+        }
+        #roomContainer::-webkit-scrollbar-thumb {
+            background-color: #c7d2fe;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 font-sans antialiased">
+    <!-- Floating Particles Background -->
+    <div id="particles-js" class="fixed inset-0 z-0"></div>
+    
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <!-- Header with Animated Title -->
+        <header class="text-center mb-8 md:mb-12">
+            <div class="inline-block animate__animated animate__fadeInDown">
+                <h1 class="text-4xl md:text-5xl font-bold mb-2 md:mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600 relative">
+                    Exam Room Simulator
+                    <span class="absolute -right-6 -top-4 text-yellow-500 text-2xl animate-spin">
+                        <i class="fas fa-atom"></i>
+                    </span>
+                </h1>
+                <div class="h-1 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full mx-auto w-3/4 md:w-1/2 animate__animated animate__fadeIn"></div>
+            </div>
+            <p class="text-base md:text-lg text-gray-600 max-w-2xl mx-auto mt-4 animate__animated animate__fadeIn animate__delay-1s px-4">
+                Interactive visualization of optimal seating algorithm where students maximize distance from others
+            </p>
+        </header>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+            <!-- Problem Explanation Panel -->
+            <div class="bg-white rounded-2xl shadow-xl p-5 md:p-6 border border-white/20 backdrop-blur-sm animate__animated animate__fadeInLeft hover:shadow-lg transition-shadow duration-300">
+                <div class="flex items-center mb-4">
+                    <div class="bg-gradient-to-r from-purple-100 to-blue-100 p-2 rounded-lg mr-3">
+                        <i class="fas fa-question-circle text-purple-600 text-xl"></i>
+                    </div>
+                    <h2 class="text-xl md:text-2xl font-bold text-purple-700">
+                        Problem Statement
+                    </h2>
+                </div>
+                
+                <div class="space-y-4">
+                    <p class="text-gray-700 text-sm md:text-base">
+                        Design an exam room with <span class="font-bold text-purple-600">n seats</span> in a single row where students must sit to maximize distance from others.
+                    </p>
+                    
+                    <div class="bg-blue-50/50 p-3 md:p-4 rounded-lg border border-blue-100 transform hover:scale-[1.01] transition-transform duration-200">
+                        <h3 class="font-semibold text-blue-800 mb-2 flex items-center">
+                            <i class="fas fa-list-ol mr-2 text-blue-600"></i>
+                            Rules:
+                        </h3>
+                        <ul class="list-disc pl-5 space-y-1 text-gray-700 text-sm md:text-base">
+                            <li>First student sits at seat <span class="font-mono bg-blue-100 px-1.5 py-0.5 rounded">0</span></li>
+                            <li>Subsequent students choose the seat that maximizes distance to nearest neighbor</li>
+                            <li>If multiple options, choose the lowest-numbered seat</li>
+                            <li>Must implement <span class="font-mono bg-purple-100 px-1.5 py-0.5 rounded">seat()</span> and <span class="font-mono bg-purple-100 px-1.5 py-0.5 rounded">leave(p)</span> operations</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-green-50/50 p-3 md:p-4 rounded-lg border border-green-100 transform hover:scale-[1.01] transition-transform duration-200">
+                        <h3 class="font-semibold text-green-800 mb-2 flex items-center">
+                            <i class="fas fa-list-check mr-2 text-green-600"></i>
+                            Example Walkthrough:
+                        </h3>
+                        <div class="space-y-2 font-mono text-xs md:text-sm">
+                            <div class="flex items-center">
+                                <span class="bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center mr-2">1</span>
+                                <span>seat() → <span class="font-bold">0</span> (first student)</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center mr-2">2</span>
+                                <span>seat() → <span class="font-bold">9</span> (furthest from 0)</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center mr-2">3</span>
+                                <span>seat() → <span class="font-bold">4</span> (middle of 0 and 9)</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center mr-2">4</span>
+                                <span>seat() → <span class="font-bold">2</span> (middle of 0 and 4)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualization Panel -->
+            <div class="lg:col-span-2 space-y-6 md:space-y-8">
+                <!-- Controls Card -->
+                <div class="bg-white rounded-2xl shadow-xl p-5 md:p-6 border border-white/20 backdrop-blur-sm animate__animated animate__fadeInRight hover:shadow-lg transition-shadow duration-300">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                        <div>
+                            <label for="roomSize" class="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                <i class="fas fa-arrows-left-right mr-2 text-blue-500"></i>
+                                Room Size (n)
+                            </label>
+                            <div class="flex">
+                                <input type="number" id="roomSize" min="1" max="50" value="10" 
+                                       class="flex-1 rounded-l-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm md:text-base">
+                                <button id="initBtn" class="bg-indigo-600 text-white px-3 md:px-4 py-2 rounded-r-lg hover:bg-indigo-700 transition-colors flex items-center group">
+                                    Initialize
+                                    <i class="fas fa-bolt ml-2 group-hover:animate-pulse"></i>
+                                </button>
+                            </div>
+                            <div class="mt-1 text-xs text-gray-500">Max: 50 seats for best visualization</div>
+                        </div>
+                        
+                        <div class="space-y-3 md:space-y-4">
+                            <button id="seatBtn" class="w-full bg-green-600 text-white px-4 py-2 md:py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center animate__animated animate__pulse animate__infinite group">
+                                <i class="fas fa-user-plus mr-2 group-hover:animate-bounce"></i>
+                                Seat Next Student
+                            </button>
+                            
+                            <div class="flex">
+                                <input type="number" id="leaveSeat" min="0" placeholder="Seat number"
+                                       class="flex-1 rounded-l-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm md:text-base">
+                                <button id="leaveBtn" class="bg-red-600 text-white px-3 md:px-4 py-2 rounded-r-lg hover:bg-red-700 transition-colors flex items-center group">
+                                    Leave
+                                    <i class="fas fa-user-minus ml-2 group-hover:animate-wiggle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Room Visualization -->
+                <div class="bg-white rounded-2xl shadow-xl p-5 md:p-6 border border-white/20 backdrop-blur-sm animate__animated animate__fadeInUp hover:shadow-lg transition-shadow duration-300">
+                    <div class="flex justify-between items-center mb-3 md:mb-4">
+                        <h2 class="text-xl md:text-2xl font-bold text-gray-800 flex items-center">
+                            <i class="fas fa-chair mr-2 text-blue-500"></i>
+                            Exam Room
+                        </h2>
+                        <div id="roomStats" class="text-xs md:text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                            <span id="occupiedCount">0</span>/<span id="totalSeats">0</span> seats occupied
+                        </div>
+                    </div>
+                    
+                    <div id="roomContainer" class="flex flex-wrap gap-2 md:gap-3 p-3 md:p-4 bg-gray-50 rounded-xl border border-gray-200 min-h-40 overflow-x-auto">
+                        <div class="text-center w-full py-6 md:py-8 text-gray-400" id="emptyRoomMessage">
+                            <i class="fas fa-door-open text-3xl mb-3 opacity-50 animate-bounce"></i>
+                            <p class="text-sm md:text-base">Room not initialized. Set size and click "Initialize"</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Algorithm Visualization -->
+                    <div class="mt-5 md:mt-6">
+                        <h3 class="text-base md:text-lg font-semibold mb-2 md:mb-3 text-gray-700 flex items-center">
+                            <i class="fas fa-code-branch mr-2 text-blue-500"></i>
+                            Algorithm Steps
+                        </h3>
+                        <div id="algorithmVisualization" class="bg-gray-50/80 p-3 md:p-4 rounded-lg border border-gray-200 text-xs md:text-sm space-y-2 md:space-y-3">
+                            <div class="flex items-start" data-step="init">
+                                <div class="bg-blue-100 text-blue-800 rounded-full w-5 h-5 md:w-6 md:h-6 flex items-center justify-center mr-2 md:mr-3 flex-shrink-0">1</div>
+                                <div>Initialize room with <span class="font-mono bg-blue-100 px-1 py-0.5 md:px-1.5 md:py-0.5 rounded">n</span> seats</div>
+                            </div>
+                            <div class="flex items-start" data-step="seat">
+                                <div class="bg-blue-100 text-blue-800 rounded-full w-5 h-5 md:w-6 md:h-6 flex items-center justify-center mr-2 md:mr-3 flex-shrink-0">2</div>
+                                <div>For each <span class="font-mono bg-purple-100 px-1 py-0.5 md:px-1.5 md:py-0.5 rounded">seat()</span> operation:</div>
+                            </div>
+                            <div class="pl-6 md:pl-9 space-y-1 md:space-y-2">
+                                <div class="flex items-start" data-step="check-empty">
+                                    <div class="bg-gray-200 rounded-full w-3 h-3 md:w-4 md:h-4 flex items-center justify-center mr-1 md:mr-2 mt-0.5 flex-shrink-0"></div>
+                                    <div>If room empty, seat at position <span class="font-mono bg-blue-100 px-1 py-0.5 md:px-1.5 md:py-0.5 rounded">0</span></div>
+                                </div>
+                                <div class="flex items-start" data-step="find-gaps">
+                                    <div class="bg-gray-200 rounded-full w-3 h-3 md:w-4 md:h-4 flex items-center justify-center mr-1 md:mr-2 mt-0.5 flex-shrink-0"></div>
+                                    <div>Find largest gap between occupied seats or ends</div>
+                                </div>
+                                <div class="flex items-start" data-step="place-middle">
+                                    <div class="bg-gray-200 rounded-full w-3 h-3 md:w-4 md:h-4 flex items-center justify-center mr-1 md:mr-2 mt-0.5 flex-shrink-0"></div>
+                                    <div>Place student in middle of largest gap</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start" data-step="leave">
+                                <div class="bg-blue-100 text-blue-800 rounded-full w-5 h-5 md:w-6 md:h-6 flex items-center justify-center mr-2 md:mr-3 flex-shrink-0">3</div>
+                                <div>For <span class="font-mono bg-purple-100 px-1 py-0.5 md:px-1.5 md:py-0.5 rounded">leave(p)</span> operation: remove seat <span class="font-mono bg-blue-100 px-1 py-0.5 md:px-1.5 md:py-0.5 rounded">p</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Operations Log -->
+        <div class="bg-white rounded-2xl shadow-xl p-5 md:p-6 border border-white/20 backdrop-blur-sm mt-6 md:mt-8 animate__animated animate__fadeInUp animate__delay-1s hover:shadow-lg transition-shadow duration-300">
+            <div class="flex justify-between items-center mb-3 md:mb-4">
+                <h2 class="text-xl md:text-2xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-scroll mr-2 text-blue-500"></i>
+                    Operations Log
+                </h2>
+                <div class="flex items-center space-x-2">
+                    <button id="showSolutionBtn" class="text-xs md:text-sm bg-purple-600 text-white px-2 md:px-3 py-1 rounded-lg hover:bg-purple-700 transition-colors flex items-center">
+                        <i class="fas fa-lightbulb mr-1"></i>
+                        Hint
+                    </button>
+                    <button id="clearLogBtn" class="text-xs md:text-sm text-gray-500 hover:text-gray-700 flex items-center">
+                        <i class="fas fa-trash-alt mr-1"></i>
+                        Clear
+                    </button>
+                </div>
+            </div>
+            <div id="logContainer" class="bg-gray-50/80 rounded-lg border border-gray-200 p-3 md:p-4 h-48 md:h-64 overflow-y-auto space-y-2">
+                <div class="text-center text-gray-400 py-6 md:py-8" id="emptyLogMessage">
+                    <i class="far fa-clipboard text-2xl mb-2 opacity-50"></i>
+                    <p class="text-sm md:text-base">No operations yet. Start by initializing the room.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Solution Code Modal -->
+    <div id="codeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden animate__animated animate__fadeIn">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden transform transition-all duration-300 scale-95 hover:scale-100">
+            <div class="flex justify-between items-center bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-4">
+                <h3 class="text-xl font-bold flex items-center">
+                    <i class="fas fa-code mr-2"></i>
+                    Exam Room Solution Code
+                </h3>
+                <button id="closeCodeModal" class="text-white hover:text-gray-300 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <div class="bg-gray-900 rounded-lg overflow-hidden">
+                    <div class="flex items-center bg-gray-800 px-4 py-2">
+                        <div class="flex space-x-2 mr-4">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <div class="text-gray-400 text-sm">
+                            JavaScript Solution
+                        </div>
+                    </div>
+                    <pre class="bg-gray-900 text-gray-100 p-4 overflow-x-auto text-xs md:text-sm">
+                        <code class="language-javascript">
+class ExamRoom {
+    constructor(n) {
+        this.n = n;
+        this.seats = new Set();
+    }
+
+    seat() {
+        let seatNumber = 0;
+        
+        if (this.seats.size > 0) {
+            let maxDist = 0;
+            let prev = -1;
+            
+            // Check distance before first seat
+            if (!this.seats.has(0)) {
+                const firstSeat = Math.min(...this.seats);
+                if (firstSeat > maxDist) {
+                    maxDist = firstSeat;
+                    seatNumber = 0;
+                }
+            }
+            
+            // Check distances between seats
+            const sortedSeats = Array.from(this.seats).sort((a, b) => a - b);
+            for (const seat of sortedSeats) {
+                if (prev === -1) {
+                    prev = seat;
+                    continue;
+                }
+                const distance = Math.floor((seat - prev) / 2);
+                if (distance > maxDist) {
+                    maxDist = distance;
+                    seatNumber = prev + distance;
+                }
+                prev = seat;
+            }
+            
+            // Check distance after last seat
+            if (!this.seats.has(this.n - 1)) {
+                const lastSeat = Math.max(...this.seats);
+                const distance = (this.n - 1) - lastSeat;
+                if (distance > maxDist) {
+                    maxDist = distance;
+                    seatNumber = this.n - 1;
+                }
+            }
+        }
+        
+        this.seats.add(seatNumber);
+        return seatNumber;
+    }
+
+    leave(p) {
+        this.seats.delete(p);
+    }
+}
+                        </code>
+                    </pre>
+                </div>
+            </div>
+            <div class="bg-gray-100 px-6 py-3 flex justify-between items-center">
+                <div class="text-sm text-gray-500">
+                    <i class="far fa-clock mr-1"></i>
+                    Time Complexity: O(n) for seat(), O(1) for leave()
+                </div>
+                <button id="copyCodeBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center group">
+                    <i class="far fa-copy mr-2 group-hover:animate-pulse"></i>
+                    Copy Code
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div id="hintModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden animate__animated animate__fadeIn">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden transform transition-all duration-300 scale-95 hover:scale-100">
+            <div class="flex justify-between items-center bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-4">
+                <h3 class="text-xl font-bold flex items-center">
+                    <i class="fas fa-lightbulb mr-2"></i>
+                    Algorithm Hint
+                </h3>
+                <button id="closeHintModal" class="text-white hover:text-gray-300 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <div class="space-y-4">
+                    <div class="flex items-start">
+                        <div class="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center mr-3 flex-shrink-0">
+                            <i class="fas fa-bulb"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Key Insight:</h4>
+                            <p class="text-gray-700">Maintain a sorted list of occupied seats to efficiently find the largest gap between students.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center mr-3 flex-shrink-0">
+                            <i class="fas fa-arrows-alt-h"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Distance Calculation:</h4>
+                            <p class="text-gray-700">For each gap between two students, the optimal seat is the midpoint. Also consider the gaps at both ends of the row.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center mr-3 flex-shrink-0">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Optimization:</h4>
+                            <p class="text-gray-700">Using a TreeSet (in Java) or sorted array can help maintain order for O(log n) operations.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-100 px-6 py-3 flex justify-end">
+                <button id="viewFullSolutionBtn" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center">
+                    <i class="fas fa-code mr-2"></i>
+                    View Full Solution
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Buttons -->
+    <div class="fixed bottom-6 right-6 space-y-3 z-40">
+        <button id="viewCodeBtn" class="bg-gray-800 text-white p-3 rounded-full shadow-lg hover:bg-gray-900 transition-colors flex items-center justify-center animate__animated animate__fadeInUp animate__delay-2s group float-animation">
+            <i class="fas fa-code text-xl group-hover:rotate-45 transition-transform"></i>
+        </button>
+        <button id="resetBtn" class="bg-red-500 text-white p-3 rounded-full shadow-lg hover:bg-red-600 transition-colors flex items-center justify-center animate__animated animate__fadeInUp animate__delay-3s group float-animation">
+            <i class="fas fa-redo text-xl group-hover:rotate-180 transition-transform"></i>
+        </button>
+    </div>
+
+    <!-- Confetti Container -->
+    <canvas id="confetti-canvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-30"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+   <script src="script.js"></script>
+</body>
+</html>
