@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Band Performance Order System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-indigo-800 mb-3">Band Fest Performance Order System</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">Organizing performance slots for 8 prominent Bangladeshi bands using sorting algorithms</p>
+        </div>
+        
+        <!-- Problem Statement Section -->
+        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 mb-12">
+            <div class="flex items-center mb-4">
+                <div class="bg-purple-100 p-3 rounded-full mr-4">
+                    <i class="fas fa-question-circle text-purple-600 text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-semibold text-gray-800">Problem Statement</h2>
+            </div>
+            
+            <div class="prose max-w-none">
+                <p>A musical club of Leading University wants to organize a band fest with 8 prominent bands of Bangladesh:</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 my-4">
+                    <div class="bg-indigo-50 p-3 rounded-lg font-medium text-center">WARFAZE</div>
+                    <div class="bg-indigo-50 p-3 rounded-lg font-medium text-center">SHUNNO</div>
+                    <div class="bg-indigo-50 p-3 rounded-lg font-medium text-center">ARTCELL</div>
+                    <div class="bg-indigo-50 p-3 rounded-lg font-medium text-center">NEMESIS</div>
+                    <div class="bg-indigo-50 p-3 rounded-lg font-medium text-center">AURTHOHIN</div>
+                    <div class="bg-indigo-50 p-3 rounded-lg font-medium text-center">MEGHDOL</div>
+                    <div class="bg-indigo-50 p-3 rounded-lg font-medium text-center">CHIRKUT</div>
+                    <div class="bg-indigo-50 p-3 rounded-lg font-medium text-center">BLACK</div>
+                </div>
+                
+                <p>The organizers need to determine the performance order considering two cases:</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <div class="bg-blue-50 p-5 rounded-lg border border-blue-200">
+                        <h3 class="font-bold text-blue-800 text-lg mb-3 flex items-center">
+                            <i class="fas fa-sort-alpha-down mr-2"></i> Case 1: First Letter Sorting
+                        </h3>
+                        <p class="text-blue-700">The band whose name's first letter comes first in the English alphabet will perform first, with subsequent slots filled by the next alphabetical bands.</p>
+                    </div>
+                    
+                    <div class="bg-green-50 p-5 rounded-lg border border-green-200">
+                        <h3 class="font-bold text-green-800 text-lg mb-3 flex items-center">
+                            <i class="fas fa-random mr-2"></i> Case 2: Same First Letter Resolution
+                        </h3>
+                        <p class="text-green-700">When two bands share the same first letter, sort all letters of both names using a recursive technique. The band requiring more passes to sort will perform later.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Algorithms Explanation -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <!-- Selection Sort Card -->
+            <div class="algorithm-card bg-white p-6 rounded-xl shadow-lg border border-blue-200">
+                <div class="flex items-center mb-4">
+                    <div class="bg-blue-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-mouse-pointer text-blue-600 text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-gray-800">Selection Sort Algorithm</h2>
+                </div>
+                <p class="text-gray-700 mb-4">Used for <span class="font-bold text-blue-600">Case 1</span> to sort bands by their first letter:</p>
+                <ol class="list-decimal pl-5 space-y-2 text-gray-700 mb-4">
+                    <li>Iterate through all bands</li>
+                    <li>Find the band with the smallest first letter</li>
+                    <li>Swap it with the first position</li>
+                    <li>Repeat for remaining positions</li>
+                </ol>
+                <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                    <pre class="text-sm text-blue-800 overflow-x-auto">
+function selectionSort(bands) {
+    for (let i = 0; i < bands.length; i++) {
+        let minIndex = i;
+        for (let j = i + 1; j < bands.length; j++) {
+            if (bands[j][0] < bands[minIndex][0]) {
+                minIndex = j;
+            }
+        }
+        [bands[i], bands[minIndex]] = [bands[minIndex], bands[i]];
+    }
+    return bands;
+}</pre>
+                </div>
+                <div class="flowchart-container p-4 mb-4">
+                    <img src="https://www.softwaretestinghelp.com/wp-content/qa/uploads/2019/06/Selection-Sort-Flow-Chart.png" alt="Selection Sort Flowchart" class="w-full h-full object-contain">
+                </div>
+                <p class="text-sm text-gray-600">Time Complexity: O(n²) - Efficient for small datasets like our 8 bands</p>
+            </div>
+            
+            <!-- Recursive Bubble Sort Card -->
+            <div class="algorithm-card bg-white p-6 rounded-xl shadow-lg border border-green-200">
+                <div class="flex items-center mb-4">
+                    <div class="bg-green-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-recycle text-green-600 text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-gray-800">Recursive Bubble Sort</h2>
+                </div>
+                <p class="text-gray-700 mb-4">Used for <span class="font-bold text-green-600">Case 2</span> to sort individual band names:</p>
+                <ol class="list-decimal pl-5 space-y-2 text-gray-700 mb-4">
+                    <li>Compare adjacent letters in the name</li>
+                    <li>Swap if they're in the wrong order</li>
+                    <li>Repeat for the entire name</li>
+                    <li>Recursively sort the remaining letters</li>
+                </ol>
+                <div class="bg-green-50 p-4 rounded-lg mb-4">
+                    <pre class="text-sm text-green-800 overflow-x-auto">
+function recursiveBubbleSort(arr, n) {
+    if (n === 1) return;
+    for (let i = 0; i < n - 1; i++) {
+        if (arr[i] > arr[i + 1]) {
+            [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+        }
+    }
+    recursiveBubbleSort(arr, n - 1);
+}</pre>
+                </div>
+                <div class="flowchart-container p-4 mb-4">
+                    <img src="https://www.softwaretestinghelp.com/wp-content/qa/uploads/2019/06/Bubble-Sort-Flowchart.png" alt="Bubble Sort Flowchart" class="w-full h-full object-contain">
+                </div>
+                <p class="text-sm text-gray-600">Time Complexity: O(n²) - We track passes to determine sorting complexity</p>
+            </div>
+        </div>
+        
+        <!-- Solution Implementation -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Case 1: Sort by First Letter -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-blue-200">
+                <div class="flex items-center mb-4">
+                    <div class="bg-blue-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-sort-alpha-down text-blue-600 text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-gray-800">Case 1: Sort by First Letter</h2>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="font-medium text-gray-700 mb-3">Original Band List:</h3>
+                    <div id="originalBands" class="grid grid-cols-2 gap-3"></div>
+                </div>
+                
+                <div class="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h4 class="font-medium text-blue-800 mb-2 flex items-center">
+                        <i class="fas fa-info-circle mr-2"></i> Solution Approach
+                    </h4>
+                    <p class="text-blue-700 text-sm">We'll use Selection Sort to arrange bands alphabetically by their first letter. The algorithm will:</p>
+                    <ol class="list-decimal pl-5 mt-2 space-y-1 text-blue-700 text-sm">
+                        <li>Extract first letters from all band names</li>
+                        <li>Find the alphabetically smallest letter</li>
+                        <li>Place that band in the next performance slot</li>
+                        <li>Repeat for remaining bands</li>
+                    </ol>
+                </div>
+                
+                <button id="solveCase1" class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center mb-6">
+                    <i class="fas fa-play-circle mr-2"></i>
+                    Determine Performance Order
+                </button>
+                
+                <div id="case1Steps" class="hidden mb-6 bg-gray-50 p-4 rounded-lg max-h-64 overflow-y-auto">
+                    <h4 class="font-medium text-gray-700 mb-3 border-b pb-2">Sorting Steps:</h4>
+                    <div id="case1StepDetails" class="space-y-3"></div>
+                </div>
+                
+                <div id="case1ResultContainer">
+                    <h3 class="font-medium text-gray-700 mb-3">Performance Order:</h3>
+                    <div id="case1Result" class="space-y-3"></div>
+                </div>
+            </div>
+            
+            <!-- Case 2: Same First Letter Resolution -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-green-200">
+                <div class="flex items-center mb-4">
+                    <div class="bg-green-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-random text-green-600 text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-gray-800">Case 2: Same First Letter Resolution</h2>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="font-medium text-gray-700 mb-3">Select Two Bands for Comparison:</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Band 1</label>
+                            <select id="band1Select" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                <option value="ARTCELL">ARTCELL</option>
+                                <option value="AURTHOHIN">AURTHOHIN</option>
+                                <option value="BLACK">BLACK</option>
+                                <option value="CHIRKUT">CHIRKUT</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Band 2</label>
+                            <select id="band2Select" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                <option value="AURTHOHIN">AURTHOHIN</option>
+                                <option value="ARTCELL">ARTCELL</option>
+                                <option value="CHIRKUT">CHIRKUT</option>
+                                <option value="BLACK">BLACK</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-6 bg-green-50 p-4 rounded-lg border border-green-200">
+                    <h4 class="font-medium text-green-800 mb-2 flex items-center">
+                        <i class="fas fa-info-circle mr-2"></i> Solution Approach
+                    </h4>
+                    <p class="text-green-700 text-sm">We'll use Recursive Bubble Sort to compare bands with the same first letter:</p>
+                    <ol class="list-decimal pl-5 mt-2 space-y-1 text-green-700 text-sm">
+                        <li>Select two bands with matching first letters</li>
+                        <li>Sort each name's letters alphabetically</li>
+                        <li>Count the passes needed to fully sort each name</li>
+                        <li>The name requiring more passes performs later</li>
+                    </ol>
+                </div>
+                
+                <button id="solveCase2" class="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition flex items-center justify-center mb-6">
+                    <i class="fas fa-exchange-alt mr-2"></i>
+                    Compare Bands
+                </button>
+                
+                <div id="case2Result" class="space-y-4"></div>
+                
+                <div id="sortAnimationContainer" class="mt-6 hidden">
+                    <h3 class="font-medium text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-film mr-2"></i> Sorting Process Animation
+                    </h3>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex flex-col md:flex-row justify-between mb-4 gap-4">
+                            <div class="md:w-1/2">
+                                <h4 id="band1Name" class="text-center font-medium mb-2 bg-white p-2 rounded-lg"></h4>
+                                <div id="band1Animation" class="flex justify-center flex-wrap gap-1"></div>
+                                <div id="band1Passes" class="text-center mt-2 text-sm text-gray-600"></div>
+                            </div>
+                            <div class="md:w-1/2">
+                                <h4 id="band2Name" class="text-center font-medium mb-2 bg-white p-2 rounded-lg"></h4>
+                                <div id="band2Animation" class="flex justify-center flex-wrap gap-1"></div>
+                                <div id="band2Passes" class="text-center mt-2 text-sm text-gray-600"></div>
+                            </div>
+                        </div>
+                        <div id="animationControls" class="flex justify-between items-center mt-4">
+                            <button id="prevStep" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 flex items-center">
+                                <i class="fas fa-chevron-left mr-2"></i> Previous
+                            </button>
+                            <div class="flex flex-col items-center">
+                                <span id="stepInfo" class="px-4 py-1 bg-white rounded-lg font-medium">Step 0 of 0</span>
+                                <span id="passInfo" class="text-xs text-gray-500 mt-1">Pass: 0</span>
+                            </div>
+                            <button id="nextStep" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 flex items-center">
+                                Next <i class="fas fa-chevron-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Solution Summary -->
+        <div class="bg-white p-6 rounded-xl shadow-lg border border-purple-200 mt-12">
+            <div class="flex items-center mb-4">
+                <div class="bg-purple-100 p-3 rounded-full mr-4">
+                    <i class="fas fa-clipboard-check text-purple-600 text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-semibold text-gray-800">Solution Summary</h2>
+            </div>
+            
+            <div class="prose max-w-none">
+                <h3 class="text-xl font-medium text-gray-800 mb-3">Case 1: First Letter Sorting</h3>
+                <p class="text-gray-700 mb-4">After applying selection sort to the first letters of all band names, the final performance order is:</p>
+                <div id="finalOrderCase1" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6"></div>
+                
+                <h3 class="text-xl font-medium text-gray-800 mb-3">Case 2: Same First Letter Resolution</h3>
+                <p class="text-gray-700 mb-4">When bands share the same first letter, we use recursive bubble sort to determine performance order:</p>
+                <ul class="list-disc pl-5 space-y-2 text-gray-700 mb-4">
+                    <li>Sort all letters in each band name individually</li>
+                    <li>Count the number of passes required to fully sort each name</li>
+                    <li>The band requiring more passes to sort will perform later</li>
+                    <li>This approach rewards bands with names that are "more sorted" naturally</li>
+                </ul>
+                
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg mb-6">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-lightbulb text-yellow-500 mt-1 mr-3"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-medium text-yellow-800 mb-2">Why This Approach Works</h4>
+                            <p class="text-yellow-700">The number of passes needed in recursive bubble sort indicates how "unsorted" the original name was. More passes mean more inherent disorder, suggesting the band name is more complex and thus should perform later, while simpler, more alphabetically ordered names perform earlier.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
