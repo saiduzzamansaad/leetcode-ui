@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Booking Master ✈️ | Ultimate Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+        
+        .neumorphic {
+            border-radius: 1rem;
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            box-shadow:  10px 10px 20px #d9d9d9, 
+                        -10px -10px 20px #ffffff;
+        }
+        
+        .neumorphic-inset {
+            border-radius: 0.5rem;
+            background: linear-gradient(145deg, #e6e6e6, #ffffff);
+            box-shadow: inset 5px 5px 10px #d9d9d9, 
+                        inset -5px -5px 10px #ffffff;
+        }
+        
+        .flight-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        }
+        
+        .flight-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .booking-highlight {
+            animation: pulse 2.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { background-color: rgba(254, 240, 138, 0.5); }
+            50% { background-color: rgba(254, 240, 138, 0.9); }
+            100% { background-color: rgba(254, 240, 138, 0.5); }
+        }
+        
+        .result-flight {
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+        
+        .result-flight:hover {
+            transform: scale(1.1) rotate(2deg);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .progress-bar {
+            transition: width 1.5s ease-in-out;
+        }
+        
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .has-tooltip:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+        }
+        
+        @keyframes fly {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+        
+        .animate-fly {
+            animation: fly 1.5s ease-out forwards;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .theme-selector input:checked + label {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+        }
+        
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+            .flight-header div {
+                font-size: 0.6rem;
+                padding: 0.2rem;
+            }
+            .result-flight {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            .neumorphic {
+                box-shadow:  5px 5px 10px #d9d9d9, 
+                            -5px -5px 10px #ffffff;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Animated Background Elements -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden z-0">
+        <div class="absolute top-10 left-10 w-20 h-20 rounded-full bg-indigo-100 opacity-20 animate-float"></div>
+        <div class="absolute top-1/3 right-20 w-32 h-32 rounded-full bg-yellow-100 opacity-20 animate-float" style="animation-delay: 0.3s"></div>
+        <div class="absolute bottom-20 left-1/4 w-24 h-24 rounded-full bg-blue-100 opacity-20 animate-float" style="animation-delay: 0.6s"></div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <!-- Premium Header with Animation -->
+        <header class="text-center mb-12 animate__animated animate__fadeInDown">
+            <div class="inline-block relative">
+                <h1 class="text-4xl md:text-6xl font-bold text-indigo-900 mb-2 transform hover:scale-105 transition duration-500">
+                    ✈️ Flight Booking Master
+                </h1>
+                <div class="absolute -top-2 -right-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-bold px-3 py-1 rounded-full rotate-12 shadow-md animate__animated animate__pulse animate__infinite">
+                    ULTIMATE
+                </div>
+            </div>
+            <p class="text-xl text-indigo-600 mt-4">The most advanced flight booking analyzer!</p>
+            <div class="w-32 h-1 bg-gradient-to-r from-yellow-400 to-pink-500 mx-auto mt-4 rounded-full"></div>
+        </header>
+
+        <!-- Theme Selector -->
+        <div class="flex justify-center mb-8 gap-4">
+            <div class="theme-selector">
+                <input type="radio" id="theme-indigo" name="theme" value="indigo" checked class="hidden">
+                <label for="theme-indigo" class="bg-indigo-500 w-8 h-8 rounded-full cursor-pointer block transition-all duration-300"></label>
+            </div>
+            <div class="theme-selector">
+                <input type="radio" id="theme-emerald" name="theme" value="emerald" class="hidden">
+                <label for="theme-emerald" class="bg-emerald-500 w-8 h-8 rounded-full cursor-pointer block transition-all duration-300"></label>
+            </div>
+            <div class="theme-selector">
+                <input type="radio" id="theme-rose" name="theme" value="rose" class="hidden">
+                <label for="theme-rose" class="bg-rose-500 w-8 h-8 rounded-full cursor-pointer block transition-all duration-300"></label>
+            </div>
+            <div class="theme-selector">
+                <input type="radio" id="theme-amber" name="theme" value="amber" class="hidden">
+                <label for="theme-amber" class="bg-amber-500 w-8 h-8 rounded-full cursor-pointer block transition-all duration-300"></label>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Enhanced Input Section -->
+            <div class="neumorphic p-8 animate__animated animate__fadeInLeft relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-1 rounded-bl-lg font-bold">
+                    Input Panel
+                </div>
+                
+                <h2 class="text-2xl font-semibold text-indigo-800 mb-6 flex items-center">
+                    <i class="fas fa-plane-departure mr-3 text-indigo-600"></i>
+                    Enter Booking Data
+                </h2>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2 font-medium">Number of Flights (n)</label>
+                    <div class="relative">
+                        <input type="number" id="flightCount" min="1" max="100" value="5"
+                               class="w-full px-4 py-3 neumorphic-inset rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-300">
+                        <div class="absolute right-3 top-3 text-gray-400">
+                            <i class="fas fa-plane"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-gray-700 font-medium">Bookings (JSON format)</label>
+                        <div class="flex gap-2">
+                            <button id="sampleDataBtn" class="text-sm bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1 rounded-lg transition duration-300 flex items-center">
+                                <i class="fas fa-magic mr-1"></i> Sample
+                            </button>
+                            <button id="clearBtn" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-lg transition duration-300 flex items-center">
+                                <i class="fas fa-eraser mr-1"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    <textarea id="bookingsInput" rows="6" 
+                              class="w-full px-4 py-3 neumorphic-inset rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono transition duration-300"
+                              placeholder="[[1,2,10],[2,3,20],[2,5,25]]"></textarea>
+                </div>
+                
+                <!-- New Feature: Quick Add Booking Form -->
+                <div class="mb-6 border-t-2 border-gray-100 pt-4">
+                    <h3 class="text-lg font-medium text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-plus-circle mr-2 text-green-500"></i>
+                        Quick Add Booking
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-gray-600 text-sm mb-1">First Flight</label>
+                            <input type="number" id="quickFirst" min="1" class="w-full px-3 py-2 neumorphic-inset rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 text-sm mb-1">Last Flight</label>
+                            <input type="number" id="quickLast" min="1" class="w-full px-3 py-2 neumorphic-inset rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 text-sm mb-1">Seats</label>
+                            <input type="number" id="quickSeats" min="1" class="w-full px-3 py-2 neumorphic-inset rounded-lg">
+                        </div>
+                    </div>
+                    <button id="quickAddBtn" class="mt-3 w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
+                        <i class="fas fa-plus mr-2"></i> Add Booking
+                    </button>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button id="calculateBtn" 
+                            class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center">
+                        <i class="fas fa-calculator mr-2"></i> Calculate Seats
+                    </button>
+                    
+                    <button id="resetBtn" 
+                            class="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-4 px-6 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center">
+                        <i class="fas fa-redo mr-2"></i> Reset All
+                    </button>
+                </div>
+                
+                <div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                    <div class="flex">
+                        <div class="flex-shrink-0 text-blue-500">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-blue-700">
+                                <span class="font-medium">Tip:</span> Each booking should be in the format [firstFlight, lastFlight, seats]
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Premium Visualization Section -->
+            <div class="neumorphic p-8 animate__animated animate__fadeInRight relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-4 py-1 rounded-bl-lg font-bold">
+                    Visualization
+                </div>
+                
+                <h2 class="text-2xl font-semibold text-indigo-800 mb-6 flex items-center">
+                    <i class="fas fa-chart-bar mr-3 text-yellow-600"></i>
+                    Booking Visualization
+                </h2>
+                
+                <div id="progressContainer" class="mb-6 hidden">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-700">Processing...</span>
+                        <span id="progressPercent" class="text-sm font-medium text-indigo-600">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div id="progressBar" class="progress-bar bg-gradient-to-r from-blue-500 to-indigo-600 h-2.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <!-- New Feature: Visualization Tabs -->
+                <div class="mb-4 border-b border-gray-200">
+                    <ul class="flex flex-wrap -mb-px" id="visualizationTabs">
+                        <li class="mr-2">
+                            <button class="inline-block p-4 border-b-2 border-indigo-500 rounded-t-lg active" 
+                                    id="tableTab" aria-current="page">Table View</button>
+                        </li>
+                        <li class="mr-2">
+                            <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300"
+                                    id="graphTab">Graph View</button>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div id="tableVisualization" class="space-y-4 max-h-96 overflow-y-auto p-2">
+                    <p class="text-gray-500 italic text-center py-8">
+                        <i class="fas fa-plane text-3xl text-gray-300 mb-2 block"></i>
+                        Enter data and click calculate to see visualization magic!
+                    </p>
+                </div>
+                
+                <div id="graphVisualization" class="hidden max-h-96 overflow-y-auto p-2">
+                    <canvas id="bookingChart" height="300"></canvas>
+                </div>
+                
+                <div id="statsContainer" class="mt-6 hidden">
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="bg-indigo-50 p-4 rounded-lg text-center">
+                            <div class="text-indigo-600 font-bold text-2xl" id="totalFlights">0</div>
+                            <div class="text-gray-600 text-sm">Total Flights</div>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-lg text-center">
+                            <div class="text-yellow-600 font-bold text-2xl" id="totalBookings">0</div>
+                            <div class="text-gray-600 text-sm">Total Bookings</div>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg text-center">
+                            <div class="text-green-600 font-bold text-2xl" id="totalSeats">0</div>
+                            <div class="text-gray-600 text-sm">Total Seats</div>
+                        </div>
+                    </div>
+                    
+                    <!-- New Feature: Booking Summary -->
+                    <div class="mt-6">
+                        <h3 class="text-lg font-medium text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-chart-pie mr-2 text-purple-500"></i>
+                            Booking Summary
+                        </h3>
+                        <canvas id="summaryChart" height="150"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Enhanced Results Section -->
+            <div id="resultsSection" class="lg:col-span-2 hidden animate__animated animate__fadeInUp">
+                <div class="neumorphic p-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-1 rounded-bl-lg font-bold">
+                        Results
+                    </div>
+                    
+                    <h2 class="text-2xl font-semibold text-indigo-800 mb-6 flex items-center">
+                        <i class="fas fa-star mr-3 text-yellow-500"></i>
+                        Flight Booking Results
+                    </h2>
+                    
+                    <div class="flex flex-wrap justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-700">Seat Distribution</h3>
+                            <p class="text-gray-500">Total seats per flight</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button id="exportBtn" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-4 py-2 rounded-lg transition duration-300 flex items-center">
+                                <i class="fas fa-file-export mr-2"></i> Export CSV
+                            </button>
+                            <button id="exportJsonBtn" class="bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded-lg transition duration-300 flex items-center">
+                                <i class="fas fa-file-code mr-2"></i> Export JSON
+                            </button>
+                            <button id="chartBtn" class="bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded-lg transition duration-300 flex items-center">
+                                <i class="fas fa-chart-pie mr-2"></i> Show Chart
+                            </button>
+                            <button id="screenshotBtn" class="bg-amber-100 hover:bg-amber-200 text-amber-700 px-4 py-2 rounded-lg transition duration-300 flex items-center">
+                                <i class="fas fa-camera mr-2"></i> Screenshot
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- New Feature: Results Filter -->
+                    <div class="mb-6 bg-gray-50 p-4 rounded-lg">
+                        <div class="flex flex-wrap items-center gap-4">
+                            <div>
+                                <label class="block text-gray-600 text-sm mb-1">Filter by Seats</label>
+                                <select id="filterSeats" class="neumorphic-inset px-3 py-2 rounded-lg">
+                                    <option value="all">All Flights</option>
+                                    <option value="overbooked">Overbooked (>100 seats)</option>
+                                    <option value="high">High (50-100 seats)</option>
+                                    <option value="medium">Medium (20-50 seats)</option>
+                                    <option value="low">Low (<20 seats)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-600 text-sm mb-1">Sort By</label>
+                                <select id="sortResults" class="neumorphic-inset px-3 py-2 rounded-lg">
+                                    <option value="flight">Flight Number</option>
+                                    <option value="seats-asc">Seats (Low to High)</option>
+                                    <option value="seats-desc">Seats (High to Low)</option>
+                                </select>
+                            </div>
+                            <button id="applyFilterBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg mt-2">
+                                Apply
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="results" class="flex flex-wrap gap-4 justify-center"></div>
+                    
+                    <div id="chartContainer" class="mt-8 hidden">
+                        <canvas id="resultsChart" height="200"></canvas>
+                    </div>
+                    
+                    <!-- New Feature: Overbooking Alert -->
+                    <div id="overbookingAlert" class="hidden mt-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+                        <div class="flex">
+                            <div class="flex-shrink-0 text-red-500">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-red-800" id="overbookingCount">0 overbooked flights detected!</h3>
+                                <div class="mt-2 text-sm text-red-700">
+                                    <p>Some flights may have more bookings than available seats. Consider adjusting your booking strategy.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Algorithm Explanation Section -->
+            <div id="algorithmSection" class="lg:col-span-2 bg-white rounded-2xl shadow-xl p-8 mt-8 hidden animate__animated animate__fadeIn">
+                <h2 class="text-2xl font-semibold text-indigo-800 mb-6 flex items-center">
+                    <i class="fas fa-brain mr-3 text-purple-600"></i>
+                    Algorithm Explained
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-medium text-gray-800 mb-3">Brute Force Approach</h3>
+                        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                            <pre class="text-sm font-mono text-gray-800">
+// Simple but inefficient - O(n*m) complexity
+function bruteForce(bookings, n) {
+    const answer = new Array(n).fill(0);
+    
+    for (const [first, last, seats] of bookings) {
+        for (let i = first; i <= last; i++) {
+            answer[i-1] += seats;
+        }
+    }
+    
+    return answer;
+}</pre>
+                        </div>
+                        <ul class="text-gray-600 space-y-2">
+                            <li class="flex items-start">
+                                <i class="fas fa-times-circle text-red-400 mr-2 mt-1"></i>
+                                <span>For each booking, iterate through all flights in its range</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-times-circle text-red-400 mr-2 mt-1"></i>
+                                <span>Time complexity grows quickly with large inputs</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-times-circle text-red-400 mr-2 mt-1"></i>
+                                <span>Not suitable for production systems</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-medium text-gray-800 mb-3">Optimal Difference Array</h3>
+                        <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                            <pre class="text-sm font-mono text-gray-800">
+// Efficient - O(n+m) complexity
+function optimalSolution(bookings, n) {
+    const answer = new Array(n).fill(0);
+    
+    // Mark range boundaries
+    for (const [first, last, seats] of bookings) {
+        answer[first-1] += seats;
+        if (last < n) answer[last] -= seats;
+    }
+    
+    // Calculate prefix sum
+    for (let i = 1; i < n; i++) {
+        answer[i] += answer[i-1];
+    }
+    
+    return answer;
+}</pre>
+                        </div>
+                        <ul class="text-gray-600 space-y-2">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-400 mr-2 mt-1"></i>
+                                <span>Marks where seat ranges begin and end</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-400 mr-2 mt-1"></i>
+                                <span>Calculates final counts with a single pass</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-400 mr-2 mt-1"></i>
+                                <span>Perfect for large datasets</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-400 mr-2 mt-1"></i>
+                                <span>Used in production systems</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mt-8 bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border border-indigo-100">
+                    <h3 class="text-lg font-medium text-indigo-800 mb-3">Visual Explanation</h3>
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+                        <img src="https://i.imgur.com/JQZQvqJ.png" alt="Difference array explanation" class="rounded-lg shadow-md max-w-full h-auto">
+                        <div class="bg-white p-4 rounded-lg shadow-md">
+                            <h4 class="font-medium text-gray-800 mb-2">Key Concepts:</h4>
+                            <ol class="list-decimal list-inside text-gray-700 space-y-2">
+                                <li>Mark the start of each range with +seats</li>
+                                <li>Mark the end+1 of each range with -seats</li>
+                                <li>Calculate prefix sum to get final counts</li>
+                                <li>Works for overlapping ranges perfectly</li>
+                            </ol>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-3 text-center">
+                        The difference array technique is widely used in scheduling, calendar, and resource allocation systems.
+                    </p>
+                </div>
+                
+                <!-- New Feature: Performance Comparison -->
+                <div class="mt-8">
+                    <h3 class="text-xl font-medium text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-tachometer-alt mr-2 text-blue-500"></i>
+                        Performance Comparison
+                    </h3>
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <canvas id="performanceChart" height="150"></canvas>
+                    </div>
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h4 class="font-medium text-green-800 mb-2">Optimal Solution</h4>
+                            <p class="text-sm text-green-700">Handles 1,000,000 flights and bookings in milliseconds</p>
+                        </div>
+                        <div class="bg-red-50 p-4 rounded-lg">
+                            <h4 class="font-medium text-red-800 mb-2">Brute Force</h4>
+                            <p class="text-sm text-red-700">Struggles with more than 10,000 flights and bookings</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- New Feature: Flight Capacity Settings -->
+        <div id="capacitySection" class="neumorphic p-8 mt-8 hidden">
+            <h2 class="text-2xl font-semibold text-indigo-800 mb-6 flex items-center">
+                <i class="fas fa-cogs mr-3 text-gray-600"></i>
+                Flight Capacity Settings
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-lg font-medium text-gray-700 mb-3">Default Capacity</h3>
+                    <div class="flex items-center">
+                        <input type="number" id="defaultCapacity" min="50" max="500" value="150" 
+                               class="w-24 px-3 py-2 neumorphic-inset rounded-lg mr-4">
+                        <span class="text-gray-600">seats per flight</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium text-gray-700 mb-3">Custom Capacities</h3>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="flex items-center mb-2">
+                            <input type="number" id="customFlightNum" min="1" placeholder="Flight #" 
+                                   class="w-20 px-3 py-2 neumorphic-inset rounded-lg mr-2">
+                            <input type="number" id="customCapacity" min="10" placeholder="Capacity" 
+                                   class="w-24 px-3 py-2 neumorphic-inset rounded-lg mr-2">
+                            <button id="addCapacityBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div id="capacityList" class="max-h-40 overflow-y-auto">
+                            <p class="text-gray-500 italic text-sm">No custom capacities set</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="saveCapacityBtn" class="mt-6 bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-6 rounded-lg transition duration-300">
+                <i class="fas fa-save mr-2"></i> Save Capacities
+            </button>
+        </div>
+    </div>
+
+    <!-- Confetti Container -->
+    <div id="confettiContainer" class="fixed top-0 left-0 w-full h-full pointer-events-none z-50"></div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 space-y-2 z-50"></div>
+
+   <script src="script.js"></script>
+</body>
+</html>
