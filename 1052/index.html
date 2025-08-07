@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📖 Premium Bookstore Satisfaction Optimizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #e2e8f0;
+        }
+        
+        .crimson-glow {
+            background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255, 80, 120, 0.25), transparent 70%), #000000;
+        }
+        
+        .premium-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .customer-bubble {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .grumpy-toggle {
+            transition: all 0.4s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+        }
+        
+        .window-highlight {
+            animation: pulse-glow 2.5s infinite;
+        }
+        
+        .tech-glow {
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.7);
+        }
+        
+        .input-glow:focus {
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.6s ease-out forwards;
+        }
+        
+        .tech-active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(99, 102, 241, 0.4));
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+    </style>
+</head>
+<body class="min-h-screen w-full relative">
+    <!-- Crimson Shadow Background with Top Glow -->
+    <div class="absolute inset-0 z-0 crimson-glow"></div>
+    
+    <!-- Floating Particles Background -->
+    <div id="particles" class="absolute inset-0 z-0 overflow-hidden"></div>
+    
+    <!-- Main Content -->
+    <div class="relative z-10 container mx-auto px-4 py-12">
+        <!-- Header with Logo and Title -->
+        <header class="flex flex-col items-center mb-12 slide-in" style="animation-delay: 0.1s">
+            <div class="w-20 h-20 rounded-full bg-indigo-600 flex items-center justify-center mb-4 shadow-lg tech-glow">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+            </div>
+            <h1 class="text-4xl font-bold text-center bg-gradient-to-r from-indigo-400 to-pink-400 bg-clip-text text-transparent">
+                Bookstore Satisfaction Optimizer
+            </h1>
+            <p class="mt-2 text-indigo-200 text-center max-w-lg">
+                Maximize customer satisfaction by strategically applying the anti-grumpiness technique
+            </p>
+        </header>
+        
+        <!-- Main Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Configuration Panel -->
+            <div class="premium-card rounded-2xl p-6 lg:col-span-1 slide-in" style="animation-delay: 0.2s">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-white">Configuration</h2>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs px-2 py-1 rounded-full bg-indigo-900 text-indigo-200">PRO</span>
+                        <button id="help-btn" class="text-indigo-400 hover:text-indigo-300 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="space-y-5">
+                    <!-- Customers Input -->
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-indigo-100">Customers per Minute</label>
+                        <div class="relative">
+                            <input id="customers-input" type="text" value="1,0,1,2,1,1,7,5" 
+                                   class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none input-glow text-white placeholder-gray-500 transition">
+                            <div class="absolute right-3 top-3 text-xs text-gray-400">CSV</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Grumpy Input -->
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-indigo-100">Grumpy Minutes (1=grumpy)</label>
+                        <div class="relative">
+                            <input id="grumpy-input" type="text" value="0,1,0,1,0,1,0,1" 
+                                   class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none input-glow text-white placeholder-gray-500 transition">
+                            <div class="absolute right-3 top-3 text-xs text-gray-400">Binary</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Technique Duration -->
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-indigo-100">Technique Duration</label>
+                        <div class="relative">
+                            <input id="minutes-input" type="number" value="3" min="1" 
+                                   class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none input-glow text-white placeholder-gray-500 transition">
+                            <div class="absolute right-3 top-3 text-xs text-gray-400">Minutes</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="pt-2 space-y-3">
+                        <button id="calculate-btn" class="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3 px-6 rounded-lg font-medium transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            <span>Optimize Satisfaction</span>
+                        </button>
+                        
+                        <button id="random-btn" class="w-full flex items-center justify-center space-x-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-200 py-3 px-6 rounded-lg font-medium transition-all transform hover:scale-[1.02] active:scale-95 shadow">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            <span>Generate Random Scenario</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Stats Summary -->
+                <div id="stats-summary" class="mt-6 pt-6 border-t border-gray-800 hidden">
+                    <h3 class="text-sm font-medium text-indigo-300 mb-3">PERFORMANCE SUMMARY</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-gray-800/50 rounded-lg p-3">
+                            <div class="text-xs text-gray-400">Baseline</div>
+                            <div id="baseline-stat" class="text-xl font-semibold text-green-400">0</div>
+                        </div>
+                        <div class="bg-gray-800/50 rounded-lg p-3">
+                            <div class="text-xs text-gray-400">Saved</div>
+                            <div id="saved-stat" class="text-xl font-semibold text-blue-400">0</div>
+                        </div>
+                        <div class="bg-gray-800/50 rounded-lg p-3 col-span-2">
+                            <div class="text-xs text-gray-400">Total Satisfaction</div>
+                            <div id="total-stat" class="text-2xl font-bold text-white">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Visualization Panel -->
+            <div class="premium-card rounded-2xl p-6 lg:col-span-2 slide-in" style="animation-delay: 0.3s">
+                <div class="flex flex-col h-full">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold text-white">Optimization Visualizer</h2>
+                        <div class="flex space-x-4">
+                            <div class="flex items-center">
+                                <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+                                <span class="text-xs text-gray-400">Happy</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span>
+                                <span class="text-xs text-gray-400">Grumpy</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
+                                <span class="text-xs text-gray-400">Saved</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Timeline Visualization -->
+                    <div id="timeline-container" class="relative mb-6 flex-1">
+                        <div class="absolute inset-0 flex items-center justify-center" id="empty-state">
+                            <div class="text-center p-6 max-w-sm">
+                                <div class="w-16 h-16 bg-indigo-900/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-medium text-white mb-1">No Data to Visualize</h3>
+                                <p class="text-sm text-gray-400">Enter your configuration and click "Optimize Satisfaction" to see results</p>
+                            </div>
+                        </div>
+                        <div id="timeline" class="flex space-x-3 pb-4 overflow-x-auto" style="display: none;"></div>
+                    </div>
+                    
+                    <!-- Results Summary -->
+                    <div class="bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="font-medium text-white">Optimization Results</h3>
+                            <div id="window-info" class="text-sm text-blue-400 hidden">
+                                <span class="text-gray-400">Technique applied:</span> 
+                                <span id="window-start" class="font-medium">0</span>-<span id="window-end" class="font-medium">0</span> min
+                            </div>
+                        </div>
+                        
+                        <div class="h-64">
+                            <canvas id="results-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Solution Walkthrough -->
+        <div id="walkthrough-container" class="premium-card rounded-2xl p-6 mt-8 slide-in" style="animation-delay: 0.4s; display: none;">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold text-white">Optimization Walkthrough</h2>
+                <button id="collapse-walkthrough" class="text-gray-400 hover:text-white transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                    </svg>
+                </button>
+            </div>
+            
+            <div id="walkthrough" class="space-y-5"></div>
+        </div>
+    </div>
+    
+    <!-- Floating Action Button -->
+    <button id="scroll-top" class="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-indigo-600 shadow-lg flex items-center justify-center text-white opacity-0 invisible transition-all duration-300 hover:bg-indigo-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </svg>
+    </button>
+    
+    <!-- Help Modal -->
+    <div id="help-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 opacity-0 invisible transition-opacity duration-300">
+        <div class="premium-card rounded-2xl max-w-md w-full p-6 transform transition-all duration-300 scale-95">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-white">How It Works</h3>
+                <button id="close-help" class="text-gray-400 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="text-sm text-gray-300 space-y-3">
+                <p>This tool helps bookstore owners maximize customer satisfaction by strategically applying an anti-grumpiness technique.</p>
+                <p><span class="font-medium text-indigo-300">Input:</span> Enter the number of customers per minute and mark which minutes the owner is grumpy.</p>
+                <p><span class="font-medium text-indigo-300">Technique:</span> The owner can stay non-grumpy for a continuous window of minutes (your input).</p>
+                <p><span class="font-medium text-indigo-300">Output:</span> The tool finds the optimal window to apply the technique to maximize satisfied customers.</p>
+            </div>
+            <div class="mt-6 pt-4 border-t border-gray-800">
+                <button id="got-it-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg transition">
+                    Got It!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
