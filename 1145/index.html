@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Binary Tree Coloring Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tree-node {
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        .tree-node.red {
+            background: linear-gradient(135deg, #fecaca 0%, #ef4444 100%);
+            box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
+        }
+        .tree-node.blue {
+            background: linear-gradient(135deg, #bfdbfe 0%, #3b82f6 100%);
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+        }
+        .tree-node.highlight {
+            animation: pulse 1.5s infinite, float 3s ease-in-out infinite;
+        }
+        .tree-node.locked {
+            filter: grayscale(80%);
+            opacity: 0.7;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+        .connector {
+            position: absolute;
+            background: linear-gradient(to right, #6b7280, #9ca3af);
+            transform-origin: top left;
+            z-index: 1;
+        }
+        .game-board {
+            perspective: 1000px;
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .flip-card {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flipped {
+            transform: rotateY(180deg);
+        }
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .has-tooltip:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .zoom-controls {
+            transition: all 0.3s ease;
+        }
+        .zoom-controls:hover {
+            transform: scale(1.05);
+        }
+        .history-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header with animated title and navigation -->
+        <header class="mb-12 text-center">
+            <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-4 animate__animated animate__fadeInDown">
+                Binary Tree Coloring Game
+            </h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto animate__animated animate__fadeIn animate__delay-1s">
+                Master the strategy of this two-player game where coloring nodes determines the winner
+            </p>
+            <div class="flex justify-center space-x-4 mt-6 animate__animated animate__fadeIn animate__delay-2s">
+                <a href="#interactive-demo" class="px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition flex items-center">
+                    <i class="fas fa-play mr-2"></i> Interactive Demo
+                </a>
+                <a href="#learn-section" class="px-6 py-2 border border-indigo-600 text-indigo-600 rounded-full hover:bg-indigo-50 transition flex items-center">
+                    <i class="fas fa-graduation-cap mr-2"></i> Learn
+                </a>
+                <a href="#examples" class="px-6 py-2 border border-indigo-600 text-indigo-600 rounded-full hover:bg-indigo-50 transition flex items-center">
+                    <i class="fas fa-list-ol mr-2"></i> Examples
+                </a>
+            </div>
+        </header>
+
+        <!-- Main content grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left sidebar - Problem description and learning content -->
+            <div class="lg:col-span-1 space-y-8" id="learn-section">
+                <!-- Problem card -->
+                <div class="bg-white rounded-xl shadow-xl p-6 animate__animated animate__fadeInLeft">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3">
+                            <i class="fas fa-question text-red-600"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800">Problem Statement</h2>
+                    </div>
+                    <p class="mb-4 text-gray-700">
+                        Two players take turns coloring nodes in a binary tree. The first player (Red) colors any node, then the second player (Blue) colors any uncolored node. Players then alternately color uncolored neighbors of their colored nodes.
+                    </p>
+                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r mb-4">
+                        <p class="text-blue-800 font-medium">As the second player (Blue), can you choose an initial node that guarantees a win?</p>
+                    </div>
+                    <div class="flex items-start mt-4">
+                        <div class="bg-yellow-100 p-2 rounded-full mr-3">
+                            <i class="fas fa-lightbulb text-yellow-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Key Insight</h4>
+                            <p class="text-gray-700">The second player can win by controlling >50% of nodes through strategic partitioning of the tree.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solution approach card -->
+                <div class="bg-white rounded-xl shadow-xl p-6 animate__animated animate__fadeInLeft animate__delay-1s">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                            <i class="fas fa-check text-green-600"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800">Solution Approach</h2>
+                    </div>
+                    <ol class="list-decimal pl-5 space-y-3 text-gray-700">
+                        <li class="pb-2 border-b border-gray-100">Find the node colored by first player (x)</li>
+                        <li class="pb-2 border-b border-gray-100">Calculate sizes of its left, right, and parent subtrees</li>
+                        <li class="pb-2 border-b border-gray-100">If any subtree has > n/2 nodes, Blue can win by selecting the adjacent node</li>
+                        <li>Otherwise, Red can maintain control and win</li>
+                    </ol>
+                    <div class="mt-6 bg-gray-50 p-4 rounded-lg">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-code text-gray-500 mr-2"></i>
+                            <span class="font-mono text-sm text-gray-700">Time Complexity: O(n)</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-memory text-gray-500 mr-2"></i>
+                            <span class="font-mono text-sm text-gray-700">Space Complexity: O(h) [h = tree height]</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strategy tips card -->
+                <div class="bg-white rounded-xl shadow-xl p-6 animate__animated animate__fadeInLeft animate__delay-2s">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+                            <i class="fas fa-chess text-purple-600"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800">Winning Strategies</h2>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 p-2 rounded-full mr-3 flex-shrink-0">
+                                <i class="fas fa-arrow-up text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Parent Control</h4>
+                                <p class="text-gray-700 text-sm">If parent subtree is largest, select parent node to control all nodes above x.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 p-2 rounded-full mr-3 flex-shrink-0">
+                                <i class="fas fa-arrow-left text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Left Dominance</h4>
+                                <p class="text-gray-700 text-sm">If left subtree is largest, select left child to control that entire branch.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 p-2 rounded-full mr-3 flex-shrink-0">
+                                <i class="fas fa-arrow-right text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Right Dominance</h4>
+                                <p class="text-gray-700 text-sm">If right subtree is largest, select right child to control that entire branch.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main interactive demo area -->
+            <div class="lg:col-span-2 space-y-8" id="interactive-demo">
+                <!-- Game controls panel -->
+                <div class="bg-white rounded-xl shadow-xl p-6 animate__animated animate__fadeInRight">
+                    <div class="flex flex-wrap justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                            <i class="fas fa-gamepad text-indigo-600 mr-3"></i>
+                            Interactive Game Board
+                        </h2>
+                        <div class="flex space-x-2">
+                            <button id="zoomInBtn" class="zoom-controls p-2 bg-gray-100 rounded-full hover:bg-gray-200">
+                                <i class="fas fa-search-plus text-gray-700"></i>
+                            </button>
+                            <button id="zoomOutBtn" class="zoom-controls p-2 bg-gray-100 rounded-full hover:bg-gray-200">
+                                <i class="fas fa-search-minus text-gray-700"></i>
+                            </button>
+                            <button id="fullscreenBtn" class="zoom-controls p-2 bg-gray-100 rounded-full hover:bg-gray-200">
+                                <i class="fas fa-expand text-gray-700"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tab navigation -->
+                    <div class="border-b border-gray-200 mb-6">
+                        <nav class="flex space-x-8">
+                            <button id="setupTab" class="tab-active py-3 px-1 font-medium text-sm">Game Setup</button>
+                            <button id="simulationTab" class="py-3 px-1 font-medium text-sm text-gray-500 hover:text-gray-700">Simulation</button>
+                            <button id="analysisTab" class="py-3 px-1 font-medium text-sm text-gray-500 hover:text-gray-700">Analysis</button>
+                        </nav>
+                    </div>
+
+                    <!-- Tab content -->
+                    <div id="setupContent" class="tab-content">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tree Structure</label>
+                                <select id="treePreset" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="custom">Custom Tree</option>
+                                    <option value="balanced">Balanced Tree (7 nodes)</option>
+                                    <option value="left-heavy">Left-Heavy Tree</option>
+                                    <option value="right-heavy">Right-Heavy Tree</option>
+                                    <option value="large">Large Tree (15 nodes)</option>
+                                </select>
+                            </div>
+                            <div id="customTreeContainer">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Custom Tree Nodes</label>
+                                <input type="text" id="treeInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., 1,2,3,4,5,6,7">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">First Player (Red)</label>
+                                <div class="relative">
+                                    <input type="number" id="xInput" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-red-50 focus:ring-red-500 focus:border-red-500" min="1" placeholder="Node value">
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <div class="w-4 h-4 rounded-full bg-red-500"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Second Player (Blue)</label>
+                                <div class="relative">
+                                    <select id="ySelect" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-blue-50 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="">Select a node</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <div class="w-4 h-4 rounded-full bg-blue-500"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Game Speed</label>
+                                <select id="gameSpeed" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="1000">Slow</option>
+                                    <option value="500" selected>Medium</option>
+                                    <option value="200">Fast</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-3">
+                            <button id="solveBtn" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition flex items-center">
+                                <i class="fas fa-brain mr-2"></i> Find Winning Moves
+                            </button>
+                            <button id="simulateBtn" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition flex items-center">
+                                <i class="fas fa-play-circle mr-2"></i> Simulate Game
+                            </button>
+                            <button id="hintBtn" class="px-6 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition flex items-center">
+                                <i class="fas fa-lightbulb mr-2"></i> Get Hint
+                            </button>
+                            <button id="resetBtn" class="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition flex items-center">
+                                <i class="fas fa-redo mr-2"></i> Reset
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="simulationContent" class="tab-content hidden">
+                        <div class="mb-4">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium text-red-600">Red Player</span>
+                                <span class="text-sm font-medium text-blue-600">Blue Player</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div id="redProgress" class="progress-bar h-2.5 rounded-full bg-red-500" style="width: 0%"></div>
+                                <div id="blueProgress" class="progress-bar h-2.5 rounded-full bg-blue-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                                <span id="redCount" class="text-sm font-medium">0 nodes</span>
+                            </div>
+                            <div class="text-sm text-gray-500" id="moveCounter">Move 0</div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                                <span id="blueCount" class="text-sm font-medium">0 nodes</span>
+                            </div>
+                        </div>
+
+                        <div class="flex space-x-3 mb-4">
+                            <button id="pauseBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition flex items-center">
+                                <i class="fas fa-pause mr-2"></i> Pause
+                            </button>
+                            <button id="stepBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition flex items-center">
+                                <i class="fas fa-step-forward mr-2"></i> Step
+                            </button>
+                            <button id="speedUpBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition flex items-center">
+                                <i class="fas fa-tachometer-alt mr-2"></i> Speed Up
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="analysisContent" class="tab-content hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-gray-800 mb-2">Left Subtree</h4>
+                                <div class="text-2xl font-bold text-indigo-600" id="leftSize">0</div>
+                                <div class="text-sm text-gray-500">nodes</div>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-gray-800 mb-2">Right Subtree</h4>
+                                <div class="text-2xl font-bold text-indigo-600" id="rightSize">0</div>
+                                <div class="text-sm text-gray-500">nodes</div>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-gray-800 mb-2">Parent Subtree</h4>
+                                <div class="text-2xl font-bold text-indigo-600" id="parentSize">0</div>
+                                <div class="text-sm text-gray-500">nodes</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+                            <h4 class="font-semibold text-gray-800 mb-2">Optimal Moves</h4>
+                            <div id="optimalMoves" class="text-sm">
+                                <!-- Optimal moves will be inserted here -->
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r">
+                            <h4 class="font-semibold text-blue-800 mb-1">Analysis</h4>
+                            <p class="text-blue-700 text-sm" id="analysisText">
+                                Select a node for both players to see the game analysis.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tree visualization area -->
+                <div class="game-board bg-white rounded-xl shadow-xl p-6 animate__animated animate__fadeInRight animate__delay-1s">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-project-diagram text-green-600 mr-2"></i>
+                            Tree Visualization
+                        </h3>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-circle text-red-500 mr-1"></i> Red
+                            <i class="fas fa-circle text-blue-500 mx-1 ml-3"></i> Blue
+                        </div>
+                    </div>
+
+                    <div class="relative h-96 overflow-auto border border-gray-200 rounded-lg p-4 bg-gray-50" id="treeContainer">
+                        <!-- Tree will be rendered here -->
+                        <div class="absolute inset-0 flex items-center justify-center" id="emptyState">
+                            <div class="text-center p-6 max-w-md">
+                                <i class="fas fa-tree text-gray-300 text-5xl mb-4"></i>
+                                <h4 class="text-lg font-medium text-gray-500 mb-2">No Tree Loaded</h4>
+                                <p class="text-gray-400 mb-4">Enter tree nodes above and select player moves to visualize the game</p>
+                                <button id="exampleBtn" class="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200 transition">
+                                    Load Example
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="result" class="mt-4 p-4 rounded-lg hidden animate__animated animate__fadeInUp"></div>
+                </div>
+
+                <!-- Game history section -->
+                <div class="bg-white rounded-xl shadow-xl p-6 animate__animated animate__fadeInRight animate__delay-2s">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-history text-purple-600 mr-2"></i>
+                            Game History
+                        </h3>
+                        <button id="clearHistoryBtn" class="text-sm text-gray-500 hover:text-gray-700 flex items-center">
+                            <i class="fas fa-trash-alt mr-1"></i> Clear
+                        </button>
+                    </div>
+
+                    <div class="space-y-3" id="historyList">
+                        <div class="text-center py-4 text-gray-400" id="emptyHistory">
+                            <i class="fas fa-clock text-2xl mb-2"></i>
+                            <p>No games played yet</p>
+                        </div>
+                        <!-- History items will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Examples section -->
+        <div class="mt-16 bg-white rounded-xl shadow-xl p-6 animate__animated animate__fadeInUp" id="examples">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-list-ol text-indigo-600 mr-3"></i>
+                Example Scenarios
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Example 1 -->
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition history-item">
+                    <div class="flex items-center mb-3">
+                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-2">
+                            <span class="text-green-600 font-bold">1</span>
+                        </div>
+                        <h4 class="font-medium">Balanced Tree</h4>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">Nodes: 1,2,3,4,5,6,7</p>
+                    <div class="flex justify-between text-xs mb-2">
+                        <span class="text-red-500">Red: 3</span>
+                        <span class="text-blue-500">Blue: 1 (Wins)</span>
+                    </div>
+                    <button class="load-example-btn w-full py-1 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200 transition" 
+                            data-tree="1,2,3,4,5,6,7" data-x="3" data-y="1">
+                        <i class="fas fa-play mr-1"></i> Load Example
+                    </button>
+                </div>
+
+                <!-- Example 2 -->
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition history-item">
+                    <div class="flex items-center mb-3">
+                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-2">
+                            <span class="text-green-600 font-bold">2</span>
+                        </div>
+                        <h4 class="font-medium">Left-Heavy Tree</h4>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">Nodes: 1,2,3,4,5,null,null,8,9</p>
+                    <div class="flex justify-between text-xs mb-2">
+                        <span class="text-red-500">Red: 2</span>
+                        <span class="text-blue-500">Blue: 4 (Wins)</span>
+                    </div>
+                    <button class="load-example-btn w-full py-1 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200 transition" 
+                            data-tree="1,2,3,4,5,null,null,8,9" data-x="2" data-y="4">
+                        <i class="fas fa-play mr-1"></i> Load Example
+                    </button>
+                </div>
+
+                <!-- Example 3 -->
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition history-item">
+                    <div class="flex items-center mb-3">
+                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-2">
+                            <span class="text-green-600 font-bold">3</span>
+                        </div>
+                        <h4 class="font-medium">Right-Heavy Tree</h4>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">Nodes: 1,null,3,null,null,6,7</p>
+                    <div class="flex justify-between text-xs mb-2">
+                        <span class="text-red-500">Red: 3</span>
+                        <span class="text-blue-500">Blue: 6 (Wins)</span>
+                    </div>
+                    <button class="load-example-btn w-full py-1 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200 transition" 
+                            data-tree="1,null,3,null,null,6,7" data-x="3" data-y="6">
+                        <i class="fas fa-play mr-1"></i> Load Example
+                    </button>
+                </div>
+
+                <!-- Example 4 -->
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition history-item">
+                    <div class="flex items-center mb-3">
+                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-2">
+                            <span class="text-green-600 font-bold">4</span>
+                        </div>
+                        <h4 class="font-medium">Large Tree</h4>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">Nodes: 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15</p>
+                    <div class="flex justify-between text-xs mb-2">
+                        <span class="text-red-500">Red: 7</span>
+                        <span class="text-blue-500">Blue: 3 (Wins)</span>
+                    </div>
+                    <button class="load-example-btn w-full py-1 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200 transition" 
+                            data-tree="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15" data-x="7" data-y="3">
+                        <i class="fas fa-play mr-1"></i> Load Example
+                    </button>
+                </div>
+
+                <!-- Example 5 -->
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition history-item">
+                    <div class="flex items-center mb-3">
+                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-2">
+                            <span class="text-green-600 font-bold">5</span>
+                        </div>
+                        <h4 class="font-medium">No-Win Scenario</h4>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">Nodes: 1,2,3</p>
+                    <div class="flex justify-between text-xs mb-2">
+                        <span class="text-red-500">Red: 1</span>
+                        <span class="text-gray-500">Blue: Cannot Win</span>
+                    </div>
+                    <button class="load-example-btn w-full py-1 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200 transition" 
+                            data-tree="1,2,3" data-x="1" data-y="2">
+                        <i class="fas fa-play mr-1"></i> Load Example
+                    </button>
+                </div>
+
+                <!-- Example 6 -->
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition history-item">
+                    <div class="flex items-center mb-3">
+                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-2">
+                            <span class="text-green-600 font-bold">6</span>
+                        </div>
+                        <h4 class="font-medium">Complex Tree</h4>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">Nodes: 1,2,3,4,5,6,7,8,null,null,11</p>
+                    <div class="flex justify-between text-xs mb-2">
+                        <span class="text-red-500">Red: 5</span>
+                        <span class="text-blue-500">Blue: 1 (Wins)</span>
+                    </div>
+                    <button class="load-example-btn w-full py-1 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200 transition" 
+                            data-tree="1,2,3,4,5,6,7,8,null,null,11" data-x="5" data-y="1">
+                        <i class="fas fa-play mr-1"></i> Load Example
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-16 pt-8 pb-12 border-t border-gray-200 text-center">
+            <h3 class="text-lg font-medium text-gray-800 mb-4">Binary Tree Coloring Game</h3>
+            <p class="text-gray-600 max-w-2xl mx-auto mb-6">
+                An interactive learning tool to understand game theory and tree traversal algorithms. Perfect for coding interview preparation!
+            </p>
+            <div class="flex justify-center space-x-6">
+                <a href="#" class="text-gray-400 hover:text-gray-500">
+                    <i class="fab fa-github text-xl"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-gray-500">
+                    <i class="fab fa-linkedin text-xl"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-gray-500">
+                    <i class="fab fa-twitter text-xl"></i>
+                </a>
+            </div>
+        </footer>
+    </div>
+
+   <script src="script.js"></script>
+</body>
+</html>
