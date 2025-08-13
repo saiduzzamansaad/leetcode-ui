@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gold Miner 2025 - Maximum Gold Path Finder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes goldGlow {
+            0%, 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes pathPulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes coinSpin {
+            0% { transform: rotateY(0); }
+            100% { transform: rotateY(360deg); }
+        }
+        
+        .gold-cell {
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+        
+        .gold-cell:hover {
+            transform: scale(1.05) rotateY(10deg);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+        }
+        
+        .gold-cell.gold-highlight {
+            animation: goldGlow 2s infinite;
+        }
+        
+        .path-cell {
+            animation: pathPulse 1.5s infinite;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .path-cell::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border: 2px solid rgba(255, 215, 0, 0.7);
+            border-radius: 0.5rem;
+            animation: pathPulse 1.5s infinite;
+            z-index: -1;
+        }
+        
+        .miner-icon {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .coin-animation {
+            animation: coinSpin 1s linear infinite;
+            display: inline-block;
+        }
+        
+        .grid-container {
+            display: grid;
+            gap: 0.5rem;
+            width: 100%;
+            overflow: auto;
+            padding: 0.5rem;
+        }
+        
+        .tooltip {
+            position: relative;
+        }
+        
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 120px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: rgba(255, 215, 0, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-value {
+            height: 100%;
+            background: linear-gradient(90deg, #fbbf24, #f59e0b);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        
+        .stats-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .tutorial-step {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+        
+        .tutorial-step.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)) !important;
+            }
+            
+            .mobile-stack {
+                flex-direction: column;
+            }
+            
+            .mobile-full {
+                width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-8 md:mb-12 relative">
+            <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                <div class="absolute top-20 left-1/4 w-8 h-8 bg-yellow-400 rounded-full opacity-20 animate-float delay-100"></div>
+                <div class="absolute top-40 right-1/3 w-6 h-6 bg-yellow-500 rounded-full opacity-20 animate-float delay-300"></div>
+                <div class="absolute top-10 right-1/5 w-4 h-4 bg-yellow-300 rounded-full opacity-20 animate-float delay-500"></div>
+            </div>
+            
+            <h1 class="text-4xl md:text-5xl font-bold mb-2 md:mb-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent animate__animated animate__fadeInDown">
+                Gold Miner 2025
+            </h1>
+            <p class="text-lg md:text-xl text-yellow-200 animate__animated animate__fadeIn animate__delay-1s max-w-2xl mx-auto">
+                Discover the richest path in the mine and collect maximum gold!
+            </p>
+            
+            <div class="miner-icon inline-block mt-4 md:mt-6 relative">
+                <div class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs animate-pulse">PRO</div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" fill="currentColor" class="bi bi-person-arms-up text-yellow-400" viewBox="0 0 16 16">
+                    <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
+                    <path d="m5.93 6.704-.846 8.451a.768.768 0 0 0 1.523.203l.81-4.865a.59.59 0 0 1 1.165 0l.81 4.865a.768.768 0 0 0 1.523-.203l-.845-8.451A1.5 1.5 0 0 1 10.5 5.5L13 2.284a.796.796 0 0 0-1.239-.998L9.634 3.84a.7.7 0 0 1-.33.235c-.23.074-.665.176-1.304.176-.64 0-1.074-.102-1.305-.176a.7.7 0 0 1-.329-.235L4.239 1.286a.796.796 0 0 0-1.24.998l2.5 3.216c.317.316.475.758.43 1.204Z"/>
+                </svg>
+            </div>
+            
+            <div class="mt-4 flex justify-center space-x-2">
+                <div class="bg-yellow-900 bg-opacity-50 px-3 py-1 rounded-full text-xs text-yellow-200 flex items-center">
+                    <i class="fas fa-bolt mr-1 text-yellow-400"></i> Interactive Grid
+                </div>
+                <div class="bg-yellow-900 bg-opacity-50 px-3 py-1 rounded-full text-xs text-yellow-200 flex items-center">
+                    <i class="fas fa-chart-line mr-1 text-yellow-400"></i> Real-time Stats
+                </div>
+                <div class="bg-yellow-900 bg-opacity-50 px-3 py-1 rounded-full text-xs text-yellow-200 flex items-center">
+                    <i class="fas fa-mobile-alt mr-1 text-yellow-400"></i> Mobile Friendly
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-gray-800 rounded-xl p-6 shadow-lg border border-yellow-700 animate__animated animate__fadeInLeft relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-yellow-600 text-white text-xs font-bold px-2 py-1 rounded-bl-lg">
+                        GOLD GRID
+                    </div>
+                    
+                    <h2 class="text-2xl font-semibold mb-4 text-yellow-400 flex items-center">
+                        <i class="fas fa-layer-group mr-2"></i>
+                        Mine Grid Editor
+                    </h2>
+                    
+                    <div class="mb-6">
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <button id="random-grid" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105 flex items-center tooltip">
+                                <i class="fas fa-random mr-2"></i>
+                                Random Grid
+                                <span class="tooltip-text">Generate random gold values</span>
+                            </button>
+                            <button id="solve-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105 flex items-center tooltip">
+                                <i class="fas fa-route mr-2"></i>
+                                Find Max Path
+                                <span class="tooltip-text">Calculate optimal path</span>
+                            </button>
+                            <button id="reset-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105 flex items-center tooltip">
+                                <i class="fas fa-undo mr-2"></i>
+                                Reset
+                                <span class="tooltip-text">Clear current solution</span>
+                            </button>
+                            <button id="clear-grid" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105 flex items-center tooltip">
+                                <i class="fas fa-trash-alt mr-2"></i>
+                                Clear Grid
+                                <span class="tooltip-text">Set all cells to 0</span>
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-5 gap-4 mb-4">
+                            <div class="sm:col-span-2 flex flex-wrap gap-2">
+                                <label class="flex items-center bg-gray-700 px-3 py-2 rounded-lg flex-1 min-w-[120px]">
+                                    <span class="mr-2 text-gray-300"><i class="fas fa-border-all"></i></span>
+                                    <span class="mr-2">Rows:</span>
+                                    <input type="number" id="rows" min="1" max="15" value="3" class="bg-gray-800 text-white rounded px-2 py-1 w-16 text-center">
+                                </label>
+                                <label class="flex items-center bg-gray-700 px-3 py-2 rounded-lg flex-1 min-w-[120px]">
+                                    <span class="mr-2 text-gray-300"><i class="fas fa-border-all"></i></span>
+                                    <span class="mr-2">Cols:</span>
+                                    <input type="number" id="cols" min="1" max="15" value="3" class="bg-gray-800 text-white rounded px-2 py-1 w-16 text-center">
+                                </label>
+                            </div>
+                            <div class="sm:col-span-3 flex flex-wrap gap-2">
+                                <button id="resize-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105 flex items-center flex-1">
+                                    <i class="fas fa-expand mr-2"></i>
+                                    Resize Grid
+                                </button>
+                                <button id="sample1-btn" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg transition-all text-sm flex items-center tooltip">
+                                    <i class="fas fa-vial mr-1"></i>
+                                    Sample 1
+                                    <span class="tooltip-text">Load sample grid 1</span>
+                                </button>
+                                <button id="sample2-btn" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg transition-all text-sm flex items-center tooltip">
+                                    <i class="fas fa-vial mr-1"></i>
+                                    Sample 2
+                                    <span class="tooltip-text">Load sample grid 2</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="flex items-center">
+                                <span class="mr-2 text-gray-300"><i class="fas fa-sliders-h"></i></span>
+                                <span class="mr-2">Gold Density:</span>
+                                <input type="range" id="gold-density" min="1" max="100" value="70" class="w-full max-w-[200px]">
+                                <span id="density-value" class="ml-2 text-yellow-400">70%</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <div id="grid-loading" class="absolute inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center rounded-lg z-10 hidden">
+                            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
+                        </div>
+                        <div id="grid-container" class="grid-container bg-gray-900 rounded-lg p-3" style="grid-template-columns: repeat(3, minmax(60px, 1fr));">
+                            <!-- Grid will be generated here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-800 rounded-xl p-6 shadow-lg border border-yellow-700 animate__animated animate__fadeInLeft">
+                    <h2 class="text-2xl font-semibold mb-4 text-yellow-400 flex items-center">
+                        <i class="fas fa-chart-bar mr-2"></i>
+                        Mining Statistics
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="stats-card bg-gray-700 p-4 rounded-lg border-l-4 border-yellow-500 hover:border-yellow-400 transition-all">
+                            <div class="text-sm text-gray-300 mb-1 flex justify-between items-center">
+                                <span><i class="fas fa-coins mr-1 text-yellow-400"></i> Total Gold</span>
+                                <span class="text-xs bg-yellow-900 bg-opacity-50 px-2 py-1 rounded">SUM</span>
+                            </div>
+                            <div id="total-gold" class="text-2xl font-bold text-yellow-400">0</div>
+                            <div class="progress-bar mt-2">
+                                <div id="total-gold-progress" class="progress-value" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="stats-card bg-gray-700 p-4 rounded-lg border-l-4 border-blue-500 hover:border-blue-400 transition-all">
+                            <div class="text-sm text-gray-300 mb-1 flex justify-between items-center">
+                                <span><i class="fas fa-percentage mr-1 text-blue-400"></i> Coverage</span>
+                                <span class="text-xs bg-blue-900 bg-opacity-50 px-2 py-1 rounded">%</span>
+                            </div>
+                            <div id="coverage" class="text-2xl font-bold text-blue-400">0%</div>
+                            <div class="progress-bar mt-2 bg-blue-900 bg-opacity-20">
+                                <div id="coverage-progress" class="progress-value bg-blue-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="stats-card bg-gray-700 p-4 rounded-lg border-l-4 border-green-500 hover:border-green-400 transition-all">
+                            <div class="text-sm text-gray-300 mb-1 flex justify-between items-center">
+                                <span><i class="fas fa-route mr-1 text-green-400"></i> Path Length</span>
+                                <span class="text-xs bg-green-900 bg-opacity-50 px-2 py-1 rounded">CELLS</span>
+                            </div>
+                            <div id="path-length" class="text-2xl font-bold text-green-400">0</div>
+                            <div class="progress-bar mt-2 bg-green-900 bg-opacity-20">
+                                <div id="path-length-progress" class="progress-value bg-green-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-gray-800 rounded-xl p-6 shadow-lg border border-yellow-700 animate__animated animate__fadeInRight h-full">
+                    <div class="absolute top-0 right-0 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-bl-lg">
+                        RESULTS
+                    </div>
+                    
+                    <h2 class="text-2xl font-semibold mb-4 text-yellow-400 flex items-center">
+                        <i class="fas fa-trophy mr-2"></i>
+                        Mining Results
+                    </h2>
+                    
+                    <div class="mb-6 space-y-4">
+                        <div class="bg-gray-700 p-4 rounded-lg border border-yellow-800 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 bg-yellow-600 text-white text-xs px-2 py-1 rounded-bl-lg">
+                                MAX GOLD
+                            </div>
+                            <h3 class="text-lg font-medium text-yellow-300 mb-2 flex items-center">
+                                <i class="fas fa-crown mr-2"></i>
+                                Maximum Gold Collected
+                            </h3>
+                            <div id="max-gold" class="text-4xl font-bold text-yellow-400 animate__animated flex items-center justify-between">
+                                <span>0</span>
+                                <i class="fas fa-coins text-yellow-300"></i>
+                            </div>
+                            <div class="text-sm text-gray-400 mt-2 flex justify-between">
+                                <span>Potential max: <span id="potential-max">0</span></span>
+                                <span id="efficiency">Efficiency: 0%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-700 p-4 rounded-lg border border-blue-800">
+                            <h3 class="text-lg font-medium text-blue-300 mb-2 flex items-center">
+                                <i class="fas fa-map-marked-alt mr-2"></i>
+                                Optimal Path Details
+                            </h3>
+                            <div id="path" class="text-gray-300">No path calculated yet</div>
+                            <div class="mt-2 text-sm">
+                                <div class="flex justify-between text-gray-400 mb-1">
+                                    <span><i class="fas fa-play-circle mr-1"></i> Start:</span>
+                                    <span id="path-start">-</span>
+                                </div>
+                                <div class="flex justify-between text-gray-400">
+                                    <span><i class="fas fa-stop-circle mr-1"></i> End:</span>
+                                    <span id="path-end">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-700 p-4 rounded-lg border border-green-800 mb-6">
+                        <h3 class="text-lg font-medium text-green-300 mb-3 flex items-center justify-between">
+                            <span><i class="fas fa-project-diagram mr-2"></i> Path Visualization</span>
+                            <span class="text-xs bg-green-900 bg-opacity-50 px-2 py-1 rounded">INTERACTIVE</span>
+                        </h3>
+                        <div id="path-visual" class="flex flex-wrap gap-2 items-center justify-center min-h-16 py-2">
+                            <div class="text-sm text-gray-500 text-center w-full">
+                                <i class="fas fa-mouse-pointer"></i> Click "Find Max Path" to visualize
+                            </div>
+                        </div>
+                        <div class="text-center mt-2">
+                            <button id="animate-path" class="text-xs bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded opacity-0 transition-all">
+                                <i class="fas fa-play mr-1"></i> Animate Path
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-700 p-4 rounded-lg border border-purple-800">
+                        <h3 class="text-lg font-medium text-purple-300 mb-2 flex items-center justify-between">
+                            <span><i class="fas fa-history mr-2"></i> Recent Finds</span>
+                            <span class="text-xs bg-purple-900 bg-opacity-50 px-2 py-1 rounded">LAST 3</span>
+                        </h3>
+                        <div id="history-list" class="space-y-2">
+                            <div class="text-sm text-gray-500 italic">No history yet</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-8 bg-gray-800 rounded-xl p-6 shadow-lg border border-yellow-700 animate__animated animate__fadeInUp animate__delay-1s">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-yellow-400">
+                    <i class="fas fa-graduation-cap mr-2"></i>
+                    Mining Tutorial
+                </h2>
+                <div class="flex space-x-2">
+                    <button id="prev-step" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded-lg text-sm">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button id="next-step" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded-lg text-sm">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="tutorial-steps relative min-h-[200px]">
+                <div class="tutorial-step active absolute inset-0" data-step="1">
+                    <h3 class="text-lg font-medium text-yellow-300 mb-2">Understanding the Mine</h3>
+                    <p class="text-gray-300 mb-3">
+                        The mine is represented as a grid where each cell contains gold (positive number) or is empty (0).
+                        Your goal is to find a path that collects the maximum amount of gold.
+                    </p>
+                    <div class="bg-gray-700 p-3 rounded-lg border border-gray-600">
+                        <div class="grid grid-cols-3 gap-2 max-w-[200px] mx-auto">
+                            <div class="bg-gray-600 text-center py-2 rounded">0</div>
+                            <div class="bg-yellow-900 text-yellow-400 text-center py-2 rounded">5</div>
+                            <div class="bg-gray-600 text-center py-2 rounded">0</div>
+                            <div class="bg-yellow-900 text-yellow-400 text-center py-2 rounded">8</div>
+                            <div class="bg-yellow-900 text-yellow-400 text-center py-2 rounded">7</div>
+                            <div class="bg-yellow-900 text-yellow-400 text-center py-2 rounded">3</div>
+                            <div class="bg-gray-600 text-center py-2 rounded">0</div>
+                            <div class="bg-yellow-900 text-yellow-400 text-center py-2 rounded">9</div>
+                            <div class="bg-gray-600 text-center py-2 rounded">0</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tutorial-step" data-step="2">
+                    <h3 class="text-lg font-medium text-yellow-300 mb-2">Movement Rules</h3>
+                    <p class="text-gray-300 mb-3">
+                        You can move in 4 directions: up, down, left, or right. You cannot move diagonally.
+                        The path must be continuous and cannot revisit any cell.
+                    </p>
+                    <div class="bg-gray-700 p-3 rounded-lg border border-gray-600">
+                        <div class="grid grid-cols-3 gap-2 max-w-[200px] mx-auto relative">
+                            <div class="bg-gray-600 text-center py-2 rounded">0</div>
+                            <div class="bg-yellow-600 text-yellow-100 text-center py-2 rounded">5</div>
+                            <div class="bg-gray-600 text-center py-2 rounded">0</div>
+                            <div class="bg-yellow-600 text-yellow-100 text-center py-2 rounded path-arrow-right">8</div>
+                            <div class="bg-yellow-600 text-yellow-100 text-center py-2 rounded path-arrow-down">7</div>
+                            <div class="bg-yellow-900 text-yellow-400 text-center py-2 rounded">3</div>
+                            <div class="bg-gray-600 text-center py-2 rounded">0</div>
+                            <div class="bg-yellow-900 text-yellow-400 text-center py-2 rounded">9</div>
+                            <div class="bg-gray-600 text-center py-2 rounded">0</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tutorial-step" data-step="3">
+                    <h3 class="text-lg font-medium text-yellow-300 mb-2">Optimal Path</h3>
+                    <p class="text-gray-300 mb-3">
+                        The algorithm explores all possible paths using backtracking to find the one with maximum gold.
+                        It marks visited cells to avoid cycles and backtracks when no more moves are possible.
+                    </p>
+                    <div class="bg-gray-700 p-3 rounded-lg border border-gray-600">
+                        <div class="grid grid-cols-3 gap-2 max-w-[200px] mx-auto">
+                            <div class="bg-gray-600 text-center py-2 rounded">0</div>
+                            <div class="bg-yellow-600 text-yellow-100 text-center py-2 rounded animate-pulse">5</div>
+                            <div class="bg-gray-600 text-center py-2 rounded">0</div>
+                            <div class="bg-yellow-600 text-yellow-100 text-center py-2 rounded animate-pulse">8</div>
+                            <div class="bg-yellow-600 text-yellow-100 text-center py-2 rounded animate-pulse">7</div>
+                            <div class="bg-yellow-900 text-yellow-400 text-center py-2 rounded">3</div>
+                            <div class="bg-gray-600 text-center py-2 rounded">0</div>
+                            <div class="bg-yellow-900 text-yellow-400 text-center py-2 rounded">9</div>
+                            <div class="bg-gray-600 text-center py-2 rounded">0</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tutorial-step" data-step="4">
+                    <h3 class="text-lg font-medium text-yellow-300 mb-2">Try It Yourself</h3>
+                    <p class="text-gray-300 mb-3">
+                        Click on cells to edit their gold values, or use the Random Grid button.
+                        When ready, click "Find Max Path" to see the optimal path highlighted.
+                    </p>
+                    <div class="flex justify-center">
+                        <button id="try-it" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105 flex items-center">
+                            <i class="fas fa-play mr-2"></i>
+                            Try It Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="mt-12 text-center text-gray-500 text-sm pb-8">
+            <div class="flex justify-center space-x-4 mb-2">
+                <a href="https://github.com/saiduzzamansaad" class="hover:text-yellow-400 transition-colors"><i class="fab fa-github"></i> GitHub</a>
+                <a href="#" class="hover:text-yellow-400 transition-colors"><i class="fas fa-book"></i> Documentation</a>
+                <a href="https://www.linkedin.com/in/muhammod-saiduzzaman-saad-084837269/" class="hover:text-yellow-400 transition-colors"><i class="fas fa-bug"></i> Report Issue</a>
+            </div>
+            <p>Gold Miner 2025 &copy; All rights reserved. Algorithm visualization tool for educational purposes.</p>
+            <p class="mt-1 text-xs">v2.1.0 | Built with <i class="fas fa-heart text-red-500"></i> by Md.Saiduzzaman saad</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
