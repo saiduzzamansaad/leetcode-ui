@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Account Balance Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        secondary: {
+                            50: '#faf6ff',
+                            100: '#f3e8ff',
+                            200: '#e9d5ff',
+                            300: '#d8b4fe',
+                            400: '#c084fc',
+                            500: '#a855f7',
+                            600: '#9333ea',
+                            700: '#7c3aed',
+                            800: '#6b21a8',
+                            900: '#581c87',
+                        },
+                        success: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        warning: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                        },
+                        danger: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            200: '#fecaca',
+                            300: '#fca5a5',
+                            400: '#f87171',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                            800: '#991b1b',
+                            900: '#7f1d1d',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-in': 'slideIn 0.5s ease-out',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideIn: {
+                            '0%': { transform: 'translateX(-20px)', opacity: '0' },
+                            '100%': { transform: 'translateX(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+        }
+        .card {
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.85);
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+        }
+        .floating-icon {
+            animation: float 6s ease-in-out infinite;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .number-input::-webkit-inner-spin-button, 
+        .number-input::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        .progress-ring {
+            transition: stroke-dashoffset 0.5s ease;
+        }
+        .balance-change {
+            transition: all 0.5s ease;
+        }
+        .transaction-item {
+            transition: all 0.3s ease;
+        }
+        .transaction-item:hover {
+            transform: translateX(5px);
+            background-color: #f8fafc;
+        }
+        .chart-bar {
+            transition: all 0.5s ease;
+        }
+        .tutorial-step {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+        .tutorial-step.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 py-10">
+    <div class="max-w-6xl w-full">
+        <!-- Header -->
+        <div class="text-center mb-16">
+            <div class="flex justify-center mb-5">
+                <div class="w-20 h-20 rounded-full gradient-bg flex items-center justify-center text-white floating-icon">
+                    <i class="fas fa-coins text-3xl"></i>
+                </div>
+            </div>
+            <h1 class="text-5xl font-bold text-gray-800 mb-4">Advanced Account Balance Calculator</h1>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto">Calculate your balance after rounding your purchase to the nearest $10 with our interactive tool</p>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-10">
+            <!-- Input Card -->
+            <div class="card rounded-2xl p-8 border-t-4 border-primary-500">
+                <h2 class="text-3xl font-semibold text-gray-800 mb-8 flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-shopping-cart text-primary-600"></i>
+                    </div>
+                    Enter Purchase Details
+                </h2>
+                
+                <div class="mb-8">
+                    <label class="block text-gray-700 mb-3 font-medium text-lg">Purchase Amount ($)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-4 text-gray-500 text-xl">$</span>
+                        <input type="number" id="purchaseAmount" min="0" max="100" 
+                               class="number-input w-full pl-12 pr-6 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-primary-200 focus:border-primary-400 transition-all duration-300"
+                               placeholder="Enter amount (0-100)">
+                    </div>
+                    <div class="mt-3 flex justify-between px-1">
+                        <span class="text-sm text-gray-500">Min: $0</span>
+                        <span class="text-sm text-gray-500">Max: $100</span>
+                    </div>
+                </div>
+                
+                <div class="mb-8">
+                    <label class="block text-gray-700 mb-3 font-medium text-lg">Initial Balance ($)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-4 text-gray-500 text-xl">$</span>
+                        <input type="number" id="initialBalance" value="100" 
+                               class="w-full pl-12 pr-6 py-4 text-lg border-2 border-gray-200 rounded-xl bg-gray-100 focus:ring-4 focus:ring-primary-200 focus:border-primary-400 transition-all duration-300"
+                               readonly>
+                    </div>
+                </div>
+                
+                <button id="calculateBtn" 
+                        class="w-full gradient-bg hover:opacity-90 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 text-lg shadow-lg transform hover:scale-[1.02]">
+                    <i class="fas fa-calculator"></i> Calculate Balance
+                </button>
+
+                <!-- Animated Balance Visualization -->
+                <div class="mt-10">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-gray-700 font-medium">Balance Usage</span>
+                        <span id="balancePercentage" class="text-primary-600 font-bold">0%</span>
+                    </div>
+                    <div class="h-4 bg-gray-200 rounded-full overflow-hidden">
+                        <div id="balanceProgress" class="h-full gradient-bg rounded-full transition-all duration-1000" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Transaction History -->
+                <div class="mt-10">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-history text-secondary-500"></i> Transaction History
+                    </h3>
+                    <div id="transactionList" class="max-h-60 overflow-y-auto space-y-3 pr-2">
+                        <!-- Transactions will be added here dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Card -->
+            <div class="card rounded-2xl p-8 border-t-4 border-success-500">
+                <h2 class="text-3xl font-semibold text-gray-800 mb-8 flex items-center gap-3">
+                    <div class="w-10 h-10 bg-success-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-chart-line text-success-600"></i>
+                    </div>
+                    Calculation Results
+                </h2>
+                
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center p-5 bg-primary-50 rounded-xl balance-change">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-receipt text-primary-600"></i>
+                            </div>
+                            <span class="text-gray-700 font-medium">Purchase Amount:</span>
+                        </div>
+                        <span id="purchaseDisplay" class="text-xl font-semibold text-gray-800">$0</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center p-5 bg-warning-50 rounded-xl balance-change">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-warning-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-exchange-alt text-warning-600"></i>
+                            </div>
+                            <span class="text-gray-700 font-medium">Rounded Amount:</span>
+                        </div>
+                        <span id="roundedDisplay" class="text-xl font-semibold text-warning-700">$0</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center p-5 bg-success-50 rounded-xl balance-change">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-success-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-wallet text-success-600"></i>
+                            </div>
+                            <span class="text-gray-700 font-medium">Initial Balance:</span>
+                        </div>
+                        <span id="initialDisplay" class="text-xl font-semibold text-success-700">$100</span>
+                    </div>
+                    
+                    <div class="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-6"></div>
+                    
+                    <div class="flex justify-between items-center p-6 bg-gradient-to-r from-primary-50 to-secondary-50 rounded-xl balance-change">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
+                                <i class="fas fa-piggy-bank text-secondary-600 text-xl"></i>
+                            </div>
+                            <span class="text-gray-700 font-medium text-lg">Final Balance:</span>
+                        </div>
+                        <span id="finalDisplay" class="text-3xl font-bold text-primary-700">$100</span>
+                    </div>
+                </div>
+                
+                <div id="explanation" class="mt-8 p-5 bg-gray-50 rounded-xl text-gray-600 border border-gray-200 transition-all duration-500">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-info-circle text-primary-500 mt-1"></i>
+                        <p>Enter a purchase amount and click calculate to see the result.</p>
+                    </div>
+                </div>
+
+                <!-- Circular Progress -->
+                <div class="mt-10 flex justify-center">
+                    <div class="relative">
+                        <svg class="w-40 h-40 transform -rotate-90" viewBox="0 0 100 100">
+                            <!-- Background circle -->
+                            <circle class="text-gray-200 stroke-current" stroke-width="8" cx="50" cy="50" r="40" fill="transparent" />
+                            <!-- Progress circle -->
+                            <circle id="progressCircle" class="progress-ring text-primary-500 stroke-current" stroke-width="8" stroke-linecap="round" cx="50" cy="50" r="40" fill="transparent" 
+                                    stroke-dasharray="251.2" stroke-dashoffset="251.2" />
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span id="circlePercentage" class="text-2xl font-bold text-primary-700">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Savings Chart -->
+                <div class="mt-10">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-chart-bar text-secondary-500"></i> Savings Comparison
+                    </h3>
+                    <div id="savingsChart" class="h-40 flex items-end justify-between gap-2 px-4">
+                        <!-- Chart bars will be added here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tutorial Section -->
+        <div class="mt-16 card rounded-2xl p-8">
+            <h2 class="text-3xl font-semibold text-gray-800 mb-8 flex items-center gap-3">
+                <div class="w-10 h-10 bg-warning-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-warning-600"></i>
+                </div>
+                How Rounding Works - Interactive Tutorial
+            </h2>
+            
+            <div class="bg-gray-50 p-6 rounded-xl mb-6">
+                <div id="tutorialContent" class="min-h-[200px]">
+                    <div class="tutorial-step active">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Step 1: Understanding Rounding</h3>
+                        <p class="text-gray-600 mb-4">When making a purchase, the amount is rounded to the nearest multiple of 10. This means values ending with 5 or higher are rounded up, while values ending with 4 or lower are rounded down.</p>
+                        <div class="flex justify-center my-4">
+                            <div class="bg-white p-4 rounded-lg shadow-md">
+                                <p class="text-center font-semibold">15 → 20 | 14 → 10</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tutorial-step">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Step 2: Impact on Your Balance</h3>
+                        <p class="text-gray-600 mb-4">Your bank account balance is reduced by the rounded amount, not the original purchase price. This can sometimes work in your favor, and sometimes against you.</p>
+                        <div class="flex justify-center my-4">
+                            <div class="bg-white p-4 rounded-lg shadow-md">
+                                <p class="text-center font-semibold">$9 purchase → $10 deducted</p>
+                                <p class="text-center font-semibold">$11 purchase → $10 deducted</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tutorial-step">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Step 3: Try It Yourself</h3>
+                        <p class="text-gray-600 mb-4">Enter different values in the calculator to see how rounding affects your final balance. Notice how values ending in 5 always round up.</p>
+                        <div class="flex justify-center my-4">
+                            <div class="bg-white p-4 rounded-lg shadow-md">
+                                <p class="text-center font-semibold">Try: 5, 15, 25, 35</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between mt-6">
+                    <button id="prevTutorial" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium disabled:opacity-50">
+                        <i class="fas fa-arrow-left mr-2"></i> Previous
+                    </button>
+                    <button id="nextTutorial" class="px-4 py-2 gradient-bg text-white rounded-lg font-medium">
+                        Next <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Examples Section -->
+        <div class="mt-16 card rounded-2xl p-8">
+            <h2 class="text-3xl font-semibold text-gray-800 mb-8 flex items-center gap-3">
+                <div class="w-10 h-10 bg-warning-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-lightbulb text-warning-600"></i>
+                </div>
+                How It Works
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="p-5 bg-white border border-gray-200 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="text-center mb-4">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 floating-icon">
+                            <span class="text-blue-600 font-bold text-xl">$9</span>
+                        </div>
+                        <h3 class="font-semibold text-lg text-gray-800">Example 1</h3>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-sm text-gray-600 flex justify-between"><span>Purchase:</span> <span class="font-medium">$9</span></p>
+                        <p class="text-sm text-gray-600 flex justify-between"><span>Rounded to:</span> <span class="font-medium">$10</span></p>
+                        <p class="text-sm text-gray-600 flex justify-between"><span>Balance:</span> <span class="font-medium text-success-600">100 - 10 = $90</span></p>
+                    </div>
+                </div>
+                
+                <div class="p-5 bg-white border border-gray-200 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="text-center mb-4">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 floating-icon">
+                            <span class="text-green-600 font-bold text-xl">$15</span>
+                        </div>
+                        <h3 class="font-semibold text-lg text-gray-800">Example 2</h3>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-sm text-gray-600 flex justify-between"><span>Purchase:</span> <span class="font-medium">$15</span></p>
+                        <p class="text-sm text-gray-600 flex justify-between"><span>Rounded to:</span> <span class="font-medium">$20</span></p>
+                        <p class="text-sm text-gray-600 flex justify-between"><span>Balance:</span> <span class="font-medium text-success-600">100 - 20 = $80</span></p>
+                    </div>
+                </div>
+                
+                <div class="p-5 bg-white border border-gray-200 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="text-center mb-4">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3 floating-icon">
+                            <span class="text-purple-600 font-bold text-xl">$10</span>
+                        </div>
+                        <h3 class="font-semibold text-lg text-gray-800">Example 3</h3>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-sm text-gray-600 flex justify-between"><span>Purchase:</span> <span class="font-medium">$10</span></p>
+                        <p class="text-sm text-gray-600 flex justify-between"><span>Rounded to:</span> <span class="font-medium">$10</span></p>
+                        <p class="text-sm text-gray-600 flex justify-between"><span>Balance:</span> <span class="font-medium text-success-600">100 - 10 = $90</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 p-5 bg-blue-50 rounded-xl border border-blue-200">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-exclamation-circle text-blue-500 mt-1"></i>
+                    <p class="text-blue-700"><span class="font-semibold">Note:</span> The amount is rounded to the nearest multiple of 10. If the amount ends with 5, it's rounded up (e.g., 15 rounds to 20).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-16 text-center text-gray-500 text-sm">
+            <p>© 2023 Advanced Account Balance Calculator. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const purchaseInput = document.getElementById('purchaseAmount');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const purchaseDisplay = document.getElementById('purchaseDisplay');
+            const roundedDisplay = document.getElementById('roundedDisplay');
+            const initialDisplay = document.getElementById('initialDisplay');
+            const finalDisplay = document.getElementById('finalDisplay');
+            const explanation = document.getElementById('explanation');
+            const balanceProgress = document.getElementById('balanceProgress');
+            const balancePercentage = document.getElementById('balancePercentage');
+            const progressCircle = document.getElementById('progressCircle');
+            const circlePercentage = document.getElementById('circlePercentage');
+            const transactionList = document.getElementById('transactionList');
+            const savingsChart = document.getElementById('savingsChart');
+            const tutorialSteps = document.querySelectorAll('.tutorial-step');
+            const prevTutorialBtn = document.getElementById('prevTutorial');
+            const nextTutorialBtn = document.getElementById('nextTutorial');
+            
+            let currentTutorialStep = 0;
+            let transactionHistory = [];
+            
+            // Initialize tutorial
+            updateTutorialButtons();
+            
+            // Function to calculate rounded amount
+            function calculateRoundedAmount(amount) {
+                return Math.round(amount / 10) * 10;
+            }
+            
+            // Function to update results
+            function updateResults() {
+                const purchaseAmount = parseInt(purchaseInput.value) || 0;
+                const initialBalance = 100;
+                
+                // Validate input
+                if (purchaseAmount < 0) {
+                    purchaseInput.value = 0;
+                    return;
+                }
+                if (purchaseAmount > 100) {
+                    purchaseInput.value = 100;
+                    return;
+                }
+                
+                const roundedAmount = calculateRoundedAmount(purchaseAmount);
+                const finalBalance = initialBalance - roundedAmount;
+                
+                // Update displays
+                purchaseDisplay.textContent = `$${purchaseAmount}`;
+                roundedDisplay.textContent = `$${roundedAmount}`;
+                initialDisplay.textContent = `$${initialBalance}`;
+                finalDisplay.textContent = `$${finalBalance}`;
+                
+                // Update progress bar
+                const percentageUsed = (roundedAmount / initialBalance) * 100;
+                balanceProgress.style.width = `${percentageUsed}%`;
+                balancePercentage.textContent = `${percentageUsed.toFixed(0)}%`;
+                
+                // Update circular progress
+                const circumference = 2 * Math.PI * 40;
+                const offset = circumference - (percentageUsed / 100) * circumference;
+                progressCircle.style.strokeDashoffset = offset;
+                circlePercentage.textContent = `${percentageUsed.toFixed(0)}%`;
+                
+                // Update explanation
+                explanation.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-info-circle text-primary-500 mt-1"></i>
+                        <p>The purchase amount of <span class="font-semibold">$${purchaseAmount}</span> is rounded to 
+                        <span class="font-semibold">$${roundedAmount}</span>. Your initial balance of 
+                        <span class="font-semibold">$${initialBalance}</span> minus the rounded amount equals 
+                        <span class="font-semibold text-primary-600">$${finalBalance}</span>.</p>
+                    </div>
+                `;
+                
+                // Add to transaction history
+                addTransaction(purchaseAmount, roundedAmount, finalBalance);
+                
+                // Update savings chart
+                updateSavingsChart(purchaseAmount, roundedAmount);
+                
+                // Animate balance change elements
+                document.querySelectorAll('.balance-change').forEach(el => {
+                    el.classList.add('scale-105');
+                    setTimeout(() => {
+                        el.classList.remove('scale-105');
+                    }, 300);
+                });
+                
+                // Pulse animation for final balance
+                finalDisplay.classList.add('animate-pulse');
+                setTimeout(() => {
+                    finalDisplay.classList.remove('animate-pulse');
+                }, 1000);
+            }
+            
+            // Function to add transaction to history
+            function addTransaction(purchase, rounded, balance) {
+                const transaction = {
+                    id: Date.now(),
+                    purchase,
+                    rounded,
+                    balance,
+                    timestamp: new Date().toLocaleTimeString()
+                };
+                
+                transactionHistory.unshift(transaction);
+                if (transactionHistory.length > 5) {
+                    transactionHistory.pop();
+                }
+                
+                updateTransactionList();
+            }
+            
+            // Function to update transaction list
+            function updateTransactionList() {
+                transactionList.innerHTML = '';
+                
+                transactionHistory.forEach(transaction => {
+                    const item = document.createElement('div');
+                    item.className = 'transaction-item bg-white p-3 rounded-lg border border-gray-200 flex justify-between items-center';
+                    item.innerHTML = `
+                        <div>
+                            <div class="font-medium">$${transaction.purchase} → $${transaction.rounded}</div>
+                            <div class="text-xs text-gray-500">${transaction.timestamp}</div>
+                        </div>
+                        <div class="font-semibold ${transaction.balance < 50 ? 'text-danger-600' : 'text-success-600'}">
+                            $${transaction.balance}
+                        </div>
+                    `;
+                    
+                    transactionList.appendChild(item);
+                });
+                
+                if (transactionHistory.length === 0) {
+                    transactionList.innerHTML = '<div class="text-center text-gray-500 py-4">No transactions yet</div>';
+                }
+            }
+            
+            // Function to update savings chart
+            function updateSavingsChart(purchase, rounded) {
+                savingsChart.innerHTML = '';
+                
+                const savings = purchase - rounded;
+                const maxHeight = 120; // Max height in pixels for chart bars
+                
+                // Create bars for different scenarios
+                const scenarios = [
+                    { label: 'Actual', value: purchase, color: 'bg-primary-500' },
+                    { label: 'Rounded', value: rounded, color: savings >= 0 ? 'bg-success-500' : 'bg-danger-500' },
+                    { label: 'Savings', value: Math.abs(savings), color: savings >= 0 ? 'bg-success-300' : 'bg-danger-300' }
+                ];
+                
+                // Find max value for scaling
+                const maxValue = Math.max(...scenarios.map(s => s.value), 20);
+                
+                scenarios.forEach(scenario => {
+                    const barHeight = maxHeight * (scenario.value / maxValue);
+                    const bar = document.createElement('div');
+                    bar.className = 'flex flex-col items-center';
+                    bar.innerHTML = `
+                        <div class="text-xs mb-1">${scenario.label}</div>
+                        <div class="chart-bar w-12 ${scenario.color} rounded-t-lg transition-all duration-700" style="height: ${barHeight}px"></div>
+                        <div class="text-xs mt-1">$${scenario.value}</div>
+                    `;
+                    
+                    savingsChart.appendChild(bar);
+                });
+            }
+            
+            // Tutorial functions
+            function updateTutorialButtons() {
+                prevTutorialBtn.disabled = currentTutorialStep === 0;
+                nextTutorialBtn.textContent = currentTutorialStep === tutorialSteps.length - 1 ? 'Finish' : 'Next';
+            }
+            
+            function showTutorialStep(stepIndex) {
+                tutorialSteps.forEach((step, index) => {
+                    if (index === stepIndex) {
+                        step.classList.add('active');
+                    } else {
+                        step.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Event listeners
+            calculateBtn.addEventListener('click', updateResults);
+            
+            purchaseInput.addEventListener('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    updateResults();
+                }
+            });
+            
+            purchaseInput.addEventListener('input', function() {
+                const value = parseInt(this.value) || 0;
+                if (value > 100) this.value = 100;
+                if (value < 0) this.value = 0;
+            });
+            
+            prevTutorialBtn.addEventListener('click', function() {
+                if (currentTutorialStep > 0) {
+                    currentTutorialStep--;
+                    showTutorialStep(currentTutorialStep);
+                    updateTutorialButtons();
+                }
+            });
+            
+            nextTutorialBtn.addEventListener('click', function() {
+                if (currentTutorialStep < tutorialSteps.length - 1) {
+                    currentTutorialStep++;
+                    showTutorialStep(currentTutorialStep);
+                    updateTutorialButtons();
+                } else {
+                    // Restart tutorial
+                    currentTutorialStep = 0;
+                    showTutorialStep(currentTutorialStep);
+                    updateTutorialButtons();
+                }
+            });
+            
+            // Initialize with example
+            purchaseInput.value = 15;
+            updateResults();
+            updateTransactionList();
+            updateSavingsChart(15, 20);
+        });
+    </script>
+</body>
+</html>
